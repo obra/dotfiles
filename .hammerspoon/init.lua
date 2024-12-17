@@ -221,6 +221,10 @@ hs.hotkey.bind({"cmd", "alt", "ctrl"}, "Up", function()
   hs.window.focusedWindow():setFrame(f)
 end)
 
+hs.hotkey.bind({"cmd", "alt"}, "Return", function()
+  hs.window.focusedWindow():toggleFullScreen()
+end)
+
 hs.hotkey.bind({"cmd", "alt", "ctrl"}, "Down", function()
   local f = hs.window.focusedWindow():frame()
   local screen_height = hs.window.focusedWindow():screen():frame().h;
