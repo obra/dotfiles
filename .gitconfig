@@ -1,0 +1,163 @@
+#[url "git@github.com:"]
+#	insteadOf = "https://github.com/"
+
+[filter "lfs"]
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
+	clean = git-lfs clean -- %f
+[user]
+	name = Jesse Vincent
+	email = jesse@keyboard.io
+[filter "kicad_project"]
+        clean = sed -E 's/^update=.*$/update=Date/'
+        smudge = cat
+[filter "kicad_sch"]
+        clean = "sed -E 's/#(PWR|FLG)[0-9]+/#\\1?/'"
+        smudge = cat
+[credential]
+	helper = osxkeychain
+
+[rebase]
+  autostash = true
+[merge]
+  ff = only
+  # I pretty much never mean to do a real merge, since I use a rebase workflow.
+  # Note: this global option applies to all merges, including those done during a git pull
+  # https://git-scm.com/docs/git-config#git-config-mergeff
+
+  conflictstyle = zdiff3
+  # Standard diff is two sets of final changes. This introduces the original text before each side's changes.
+  # https://git-scm.com/docs/git-config#git-config-mergeconflictStyle
+
+
+
+[alias]
+	co = checkout
+	br = branch
+	ci = commit
+	st = status
+	prune = fetch --prune
+  # Because I constantly forget how to do this
+  # https://git-scm.com/docs/git-fetch#git-fetch--p
+
+  	undo = reset --soft HEAD^
+  # Not quite as common as an amend, but still common
+  # https://git-scm.com/docs/git-reset#git-reset-emgitresetemltmodegtltcommitgt
+
+  	stash-all = stash save --include-untracked
+  # We wanna grab those pesky un-added files!
+  # https://git-scm.com/docs/git-stash
+
+  	glog = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'
+	commit = commit --signoff
+	up = !"git switch $(git head-branch) && git fetch --all --prune --progress && git pull"
+	head-branch = !"git remote show origin | grep 'HEAD branch' | cut -d' ' -f5"
+
+
+[gpg]
+	program = /opt/homebrew/bin/gpg
+#	program = /usr/local/bin/krgpg
+[commit]
+	gpgSign = false
+[tag]
+	forceSignAnnotated = true
+
+[push]
+	default = current
+  # "push the current branch back to the branch whose changes are usually integrated into the current branch"
+  # "refuse to push if the upstream branch’s name is different from the local one"
+  # https://git-scm.com/docs/git-config#git-config-pushdefault
+
+  followTags = false
+  # Because I get sick of telling git to do it manually
+  # https://git-scm.com/docs/git-config#git-config-pushfollowTags
+
+[status]
+  showUntrackedFiles = all
+  # Sometimes a newly-added folder, since it's only one line in git status, can slip under the radar.
+  # https://git-scm.com/docs/git-config#git-config-statusshowUntrackedFiles
+[transfer]
+  fsckobjects = false
+  # To combat repository corruption!
+  # Note: this global option applies during receive and transmit
+  # https://git-scm.com/docs/git-config#git-config-transferfsckObjects
+  # via https://groups.google.com/forum/#!topic/binary-transparency/f-BI4o8HZW0
+
+
+# A nice little github-like colorful, split diff right in the console.
+# via http://owen.cymru/github-style-diff-in-terminal-with-icdiff/
+[diff]
+	tool = opendiff
+	algorithm = histogram
+	colorMoved = default
+	colorMovedWS = allow-indentation-change
+[difftool]
+  prompt = false
+[difftool "icdiff"]
+  cmd = icdiff --line-numbers $LOCAL $REMOTE
+[color]
+        diff = auto
+        ui = true
+[core]
+	#pager = diff-so-fancy | less --tabs=4 -RFX
+	# pager = delta
+        attributesfile = ~/.gitattributes
+	fsmonitor = true
+	hooksPath = /Users/jesse/.git_hooks
+[fsck]
+        zeroPaddedFilemode = ignore
+
+[transfer]
+                fsckobjects = false
+[fetch]
+	fsckobjects = false
+	prune = true
+	prunetags = true
+[receive]
+                fsckObjects = false
+
+
+
+[diff "kicad_pcb"]
+        command = /opt/kicad-tools/bin/git-pcbdiff
+[diff "kicad_sch"]
+#        command = /opt/kicad-tools/bin/git-schematicdiff
+[color "diff-highlight"]
+        oldNormal = red bold
+        oldHighlight = red bold 52
+        newNormal = green bold
+        newHighlight = green bold 22
+[color "diff"]
+        meta = yellow
+        frag = magenta bold
+        commit = yellow bold
+        old = red bold
+        new = green bold
+        whitespace = red reverse
+[diff-so-fancy]
+        markEmptyLines = false
+        changeHunkIndicators = false
+
+[init]
+	defaultBranch = main
+[pull]
+	rebase = true
+[format]
+	signOff = true
+
+[rerere]
+	enabled = true
+[alias]
+	autorebase = ! ~/bin/git-autorebase
+
+[interactive]
+	# diffFilter = delta --color-only
+[delta]
+	side-by-side = true
+
+[diff "jqdiff"]
+    textconv = ~/bin/jq-filter.sh
+
+[advice]
+	detachedHead = false
