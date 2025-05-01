@@ -15,6 +15,17 @@
 - When you are trying to fix a bug or compilation error or any other issue, YOU MUST NEVER throw away the old implementation and rewrite without expliict permission from the user. If you are going to do this, YOU MUST STOP and get explicit permission from the user.
 - NEVER name things as 'improved' or 'new' or 'enhanced', etc. Code naming should be evergreen. What is new today will be "old" someday.
 
+
+
+# Tracking changes
+
+If I'm asking you for something more than a trivial edit or a first version of a single document, all changes should be tracked in git:
+- If the project isn't in a git repo, stop and ask me if you can init a repo.
+- If you're starting work and there are uncommitted changes or untracked files, STOP and ask me how you should handle the uncommitted work. Suggest that we should get that stuff committed before we make more changes
+- When you start work, if we're not clearly on a branch for the current work, make a WIP branch.
+- Commit every step of the way.
+
+
 # Getting help
 
 - ALWAYS ask for clarification rather than making assumptions.
