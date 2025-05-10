@@ -8,7 +8,7 @@
 	clean = git-lfs clean -- %f
 [user]
 	name = Jesse Vincent
-	email = jesse@keyboard.io
+	email = jesse@fsck.com
 [filter "kicad_project"]
         clean = sed -E 's/^update=.*$/update=Date/'
         smudge = cat
@@ -105,6 +105,7 @@
         attributesfile = ~/.gitattributes
 	fsmonitor = true
 	hooksPath = /Users/jesse/.git_hooks
+	excludesfile = /Users/jesse/.gitignore_global
 [fsck]
         zeroPaddedFilemode = ignore
 
@@ -161,3 +162,9 @@
 
 [advice]
 	detachedHead = false
+[difftool "sourcetree"]
+	cmd = opendiff \"$LOCAL\" \"$REMOTE\"
+	path = 
+[mergetool "sourcetree"]
+	cmd = /Applications/Sourcetree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
+	trustExitCode = true
