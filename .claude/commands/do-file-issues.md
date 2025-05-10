@@ -22,6 +22,5 @@ Please copy it into `issues/0000-issue-template.md` using the `cp` shell command
 
 # Issues format
 
-Create issues for each high-level task by copying `issues/0000-issue-template.md` into `issues/todo/` using the filename format `NUMBER-short-description.md` (e.g., `0001-add-au
-thentication.md`) and then filling in the template with issue-specific content.
+Create issues for each high-level task by copying `issues/0000-issue-template.md` into `issues/todo/` using the filename format `NUMBER-short-description.md` (e.g., `0001-add-authentication.md`) and then filling in the template with issue-specific content.
 Issue numbers are sequential, starting with 0001.
