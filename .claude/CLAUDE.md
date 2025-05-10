@@ -1,57 +1,52 @@
-# Interaction
+# Working with Jesse
 
-- Any time you interact with me, you MUST address me as "Jesse"
+## Code Writing
 
-# Writing code
+- YOU MUST ALWAYS address me as "Jesse" in all communications.
+- We STRONGLY prefer simple, clean, maintainable solutions over clever or complex ones. Readability and maintainability are PRIMARY CONCERNS, even at the cost of conciseness or performance.
+- YOU MUST make the SMALLEST reasonable changes to achieve the desired outcome.
+- YOU MUST MATCH the style and formatting of surrounding code, even if it differs from standard style guides. Consistency within a file trumps external standards.
+- YOU MUST NEVER make code changes unrelated to your current task. If you notice something that should be fixed but is unrelated, document it rather than fixing it immediately.
+- YOU MUST NEVER remove code comments unless you can PROVE they are actively false. Comments are important documentation and must be preserved.
+- All code files MUST start with a brief 2-line comment explaining what the file does. Each line MUST start with "ABOUTME: " to make them easily greppable.
+- YOU MUST NEVER refer to temporal context in comments (like "recently refactored"). Comments should be evergreen and describe the code as it is.
+- YOU MUST NEVER implement mock modes for testing or any purpose. We always use real data and real APIs.
+- YOU MUST NEVER throw away implementations to rewrite them without EXPLICIT permission. If you're considering this, YOU MUST STOP and ask first.
+- YOU MUST NEVER use temporal naming conventions like 'improved', 'new', or 'enhanced'. All naming should be evergreen.
+- YOU MUST NOT change whitespace unrelated to code you're modifying.
 
-- We prefer simple, clean, maintainable solutions over clever or complex ones, even if the latter are more concise or performant. Readability and maintainability are primary concerns.
-- Make the smallest reasonable changes to get to the desired outcome. You MUST ask permission before reimplementing features or systems from scratch instead of updating the existing implementation.
-- When modifying code, match the style and formatting of surrounding code, even if it differs from standard style guides. Consistency within a file is more important than strict adherence to external standards.
-- NEVER make code changes that aren't directly related to the task you're currently assigned. If you notice something that should be fixed but is unrelated to your current task, document it in a new issue instead of fixing it immediately.
-- NEVER remove code comments unless you can prove that they are actively false. Comments are important documentation and should be preserved even if they seem redundant or unnecessary to you.
-- All code files should start with a brief 2 line comment explaining what the file does. Each line of the comment should start with the string "ABOUTME: " to make it easy to grep for.
-- When writing comments,  NEVER refer to temporal context about refactors or recent changes. Comments should be evergreen and describe the code as it is, not how it evolved or was recently changed.
-- NEVER implement a mock mode for testing or for any purpose. We always use real data and real APIs, never mock implementations.
-- When you are trying to fix a bug or compilation error or any other issue, YOU MUST NEVER throw away the old implementation and rewrite without expliict permission from the user. If you are going to do this, YOU MUST STOP and get explicit permission from the user.
-- NEVER name things as 'improved' or 'new' or 'enhanced', etc. Code naming should be evergreen. What is new today will be "old" someday. This applies to comments and code.
-- Whitespace: don't change whitespace that's not related to a line of code you're changing.
+## Version Control
 
+- For non-trivial edits, all changes MUST be tracked in git.
+- If the project isn't in a git repo, YOU MUST STOP and ask permission to initialize one.
+- If there are uncommitted changes or untracked files when starting work, YOU MUST STOP and ask how to handle them. Suggest committing existing work first.
+- When starting work without a clear branch for the current task, YOU MUST create a WIP branch.
+- YOU MUST commit frequently throughout the development process.
 
-# Tracking changes
+## Getting Help
 
-If I'm asking you for something more than a trivial edit or a first version of a single document, all changes should be tracked in git:
-- If the project isn't in a git repo, stop and ask me if you can init a repo.
-- If you're starting work and there are uncommitted changes or untracked files, STOP and ask me how you should handle the uncommitted work. Suggest that we should get that stuff committed before we make more changes
-- When you start work, if we're not clearly on a branch for the current work, make a WIP branch.
-- Commit every step of the way.
+- YOU MUST ALWAYS ask for clarification rather than making assumptions.
+- If you're having trouble, YOU MUST STOP and ask for help, especially for tasks where human input would be valuable.
 
+## Testing
 
-# Getting help
+- Tests MUST comprehensively cover ALL implemented functionality. 
+- YOU MUST NEVER ignore system or test output - logs and messages often contain CRITICAL information.
+- Test output MUST BE PRISTINE TO PASS.
+- If logs are expected to contain errors, these MUST be captured and tested.
+- NO EXCEPTIONS POLICY: ALL projects MUST have unit tests, integration tests, AND end-to-end tests. The only way to skip any test type is if Jesse EXPLICITLY states: "I AUTHORIZE YOU TO SKIP WRITING TESTS THIS TIME."
 
-- ALWAYS ask for clarification rather than making assumptions.
-- If you're having trouble with something, it's ok to stop and ask for help. Especially if it's something your human might be better at.
+## Test-Driven Development (TDD)
 
-# Testing
+We practice strict TDD. This means:
 
-- Tests MUST cover the functionality being implemented. 
-- NEVER ignore the output of the system or the tests - Logs and messages often contain CRITICAL information. 
-- TEST OUTPUT MUST BE PRISTINE TO PASS
-- If the logs are supposed to contain errors, capture and test it.
-- NO EXCEPTIONS POLICY: Under no circumstances should you mark any test type as "not applicable". Every project, regardless of size or complexity, MUST have unit tests, integration tests, AND end-to-end tests. If you believe a test type doesn't apply, you need the human to say exactly "I AUTHORIZE YOU TO SKIP WRITING TESTS THIS TIME"
+1. YOU MUST write a failing test that defines the desired functionality BEFORE writing implementation code
+2. YOU MUST run the test to confirm it fails as expected
+3. YOU MUST write ONLY enough code to make the failing test pass
+4. YOU MUST run the test to confirm success
+5. YOU MUST refactor code while ensuring tests remain green
+6. YOU MUST repeat this process for each new feature or bugfix
 
-## We practice TDD. That means:
+## Compliance Check
 
-- Write tests before writing the implementation code
-- Only write enough code to make the failing test pass
-- Refactor code continuously while ensuring tests still pass
-
-### TDD Implementation Process
-
-- Write a failing test that defines a desired function or improvement
-- Run the test to confirm it fails as expected
-- Write minimal code to make the test pass
-- Run the test to confirm success
-- Refactor code to improve design while keeping tests green
-- Repeat the cycle for each new feature or bugfix
-
-
+Before submitting any work, verify that you have followed ALL guidelines above. If you find yourself considering an exception to ANY rule, YOU MUST STOP and get explicit permission from Jesse first.
