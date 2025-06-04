@@ -103,7 +103,6 @@
 	#pager = diff-so-fancy | less --tabs=4 -RFX
 	# pager = delta
         attributesfile = ~/.gitattributes
-	fsmonitor = true
 	hooksPath = /Users/jesse/.git_hooks
 	excludesfile = /Users/jesse/.gitignore_global
 [fsck]
