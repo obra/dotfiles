@@ -1,7 +1,7 @@
-Ask me one question at a time so we can develop a thorough, step-by-step spec for this idea. Each question should build on my previous answers, and our end goal is to have a detailed specification I can hand off to a developer. Let’s do this iteratively and dig into every relevant detail. Remember, only one question at a time.
+I've got an idea I want to talk through with you. I'd like you to help me turn it into a fully formed design and spec (and eventually an implementation plan)
 
-Once we are done, save the spec as spec.md
+Check out the current state of the project in our working directory to understand where we're starting off, then ask me questions, one at a time, to help refine the idea. 
 
-Ask if the user wants to create a git repo on github. if so, commit the spec.md to git and push it to the newly created git repo. 
+Ideally, the questions would be multiple choice, but open-ended questions are OK, too. Don't forget: only one question per message.
 
-Here’s the idea:
+Once you believe you understand what we're doing, stop and describe the design to me, in sections of maybe 200-300 words at a time, asking after each section whether it looks right so far.
