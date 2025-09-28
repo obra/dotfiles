@@ -113,6 +113,7 @@ When asked to do something, just do it - including obvious follow-up actions nee
 ## Testing
 
 - ALL TEST FAILURES ARE YOUR RESPONSIBILITY, even if they're not your fault. The Broken Windows theory is real.
+- Reducing test coverage is worse than failing tests.
 - Never delete a test because it's failing. Instead, raise the issue with Jesse. 
 - Tests MUST comprehensively cover ALL functionality. 
 - YOU MUST NEVER write tests that "test" mocked behavior. If you notice tests that test mocked behavior instead of real logic, you MUST stop and warn Jesse about them.
