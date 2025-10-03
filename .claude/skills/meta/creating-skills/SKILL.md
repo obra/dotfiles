@@ -1,12 +1,12 @@
 ---
-name: Skill Creation Guide
+name: Creating Skills
 description: How to create effective skills for future Claude instances
 when_to_use: When you discover a technique, pattern, or tool worth documenting for reuse
-version: 1.0.0
+version: 2.0.0
 languages: all
 ---
 
-# Skill Creation Guide
+# Creating Skills
 
 ## What is a Skill?
 
@@ -130,10 +130,19 @@ Use words Claude would search for:
 
 ### 3. Descriptive Naming
 
-Name by what you DO or the core insight:
+**Use active voice, verb-first:**
+- ✅ `creating-skills` not `skill-creation`
+- ✅ `testing-skills-with-subagents` not `subagent-skill-testing`
+- ✅ `using-skills` not `skill-usage`
+
+**Name by what you DO or core insight:**
 - ✅ `condition-based-waiting` > `async-test-helpers`
 - ✅ `flatten-with-flags` > `data-structure-refactoring`
 - ✅ `root-cause-tracing` > `debugging-techniques`
+
+**Gerunds (-ing) work well for processes:**
+- `creating-skills`, `testing-skills`, `debugging-with-logs`
+- Active, describes the action you're taking
 
 ### 4. Content Repetition
 
@@ -223,6 +232,96 @@ pptx/
 ```
 When: Reference material too large for inline
 
+## Bulletproofing Skills Against Rationalization
+
+Skills that enforce discipline (like TDD) need to resist rationalization. Agents are smart and will find loopholes when under pressure.
+
+### Close Every Loophole Explicitly
+
+Don't just state the rule - forbid specific workarounds:
+
+<Bad>
+```markdown
+Write code before test? Delete it.
+```
+</Bad>
+
+<Good>
+```markdown
+Write code before test? Delete it. Start over.
+
+**No exceptions:**
+- Don't keep it as "reference"
+- Don't "adapt" it while writing tests
+- Don't look at it
+- Delete means delete
+```
+</Good>
+
+### Address "Spirit vs Letter" Arguments
+
+Add foundational principle early:
+
+```markdown
+**Violating the letter of the rules is violating the spirit of the rules.**
+```
+
+This cuts off entire class of "I'm following the spirit" rationalizations.
+
+### Build Rationalization Table
+
+Test the skill (see next section). Every excuse agents make goes in the table:
+
+```markdown
+| Excuse | Reality |
+|--------|---------|
+| "Too simple to test" | Simple code breaks. Test takes 30 seconds. |
+| "I'll test after" | Tests passing immediately prove nothing. |
+| "Tests after achieve same goals" | Tests-after = "what does this do?" Tests-first = "what should this do?" |
+```
+
+### Create Red Flags List
+
+Make it easy for agents to self-check when rationalizing:
+
+```markdown
+## Red Flags - STOP and Start Over
+
+- Code before test
+- "I already manually tested it"
+- "Tests after achieve the same purpose"
+- "It's about spirit not ritual"
+- "This is different because..."
+
+**All of these mean: Delete code. Start over with TDD.**
+```
+
+### Update CSO for Violation Symptoms
+
+Add to when_to_use: symptoms of when you're ABOUT to violate the rule:
+
+```yaml
+when_to_use: Every feature and bugfix. When you wrote code before tests.
+  When you're tempted to test after. When manually testing seems faster.
+```
+
+## Testing Skills With Subagents
+
+**Don't trust untested skills.** Use subagents to stress-test before deploying.
+
+See @../testing-skills-with-subagents/SKILL.md for complete methodology.
+
+**Quick process:**
+1. Write skill with clear rules
+2. Test with academic questions (do they understand?)
+3. Test with pressure scenarios (do they comply?)
+4. Identify rationalizations used
+5. Add explicit counters
+6. Re-test same scenarios
+7. Repeat until bulletproof
+
+**Key insight:** Academic questions test understanding. Pressure scenarios test compliance. You need both.
+
 ## Anti-Patterns
 
 ### ❌ Narrative Example
@@ -246,6 +345,12 @@ helper1, helper2, step3, pattern4
 
 ## Skill Creation Checklist
 
+**Before writing:**
+- [ ] Technique applies broadly (not project-specific)
+- [ ] Non-obvious enough to document
+- [ ] Would reference this again
+
+**While writing:**
 - [ ] Name describes what you DO or core insight
 - [ ] YAML frontmatter with rich when_to_use (include symptoms!)
 - [ ] Keywords throughout for search (errors, symptoms, tools)
@@ -258,6 +363,15 @@ helper1, helper2, step3, pattern4
 - [ ] One excellent example (not multi-language)
 - [ ] No narrative storytelling
 - [ ] Supporting files only for tools or heavy reference
+
+**If skill enforces discipline:**
+- [ ] Add foundational principle ("Violating letter is violating spirit")
+- [ ] Close loopholes explicitly (no "reference", no "adapt")
+- [ ] Build rationalization table (test first)
+- [ ] Create red flags list
+- [ ] Update when_to_use with violation symptoms
+- [ ] Test with subagents (see @../testing-skills-with-subagents/SKILL.md)
+- [ ] Iterate until bulletproof
 
 ## Discovery Workflow
 
