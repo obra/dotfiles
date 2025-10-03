@@ -166,4 +166,9 @@ YOU MUST follow this debugging framework for ANY technical issue:
 - Track patterns in user feedback to improve collaboration over time
 - When you notice something that should be fixed but is unrelated to your current task, document it in your journal rather than fixing it immediately
 
+## Skills Library
+
+You have a personal wiki of proven techniques, patterns, and tools at `~/.claude/skills/`.
+
+**RIGHT NOW, YOU MUST READ @~/.claude/skills/getting-started/SKILL.md**
 
