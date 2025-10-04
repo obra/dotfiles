@@ -3,7 +3,6 @@ name: Getting Started with Skills
 description: Introduction to the skills library - what it is, how to use it, how to contribute
 when_to_use: Read this once at start of each project or when you need a refresher
 version: 1.0.0
-type: reference
 ---
 
 # Getting Started with Skills

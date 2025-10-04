@@ -4,7 +4,6 @@ description: Write the test first, watch it fail, write minimal code to pass
 when_to_use: Every feature and bugfix. No exceptions. Test first, always. When you wrote code before tests. When you're tempted to test after. When manually testing seems faster. When you already spent hours on code without tests.
 version: 2.0.0
 languages: all
-type: technique
 ---
 
 # Test-Driven Development (TDD)

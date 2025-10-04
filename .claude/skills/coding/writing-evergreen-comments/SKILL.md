@@ -4,7 +4,6 @@ description: Write comments explaining WHAT and WHY, never temporal context or h
 when_to_use: When adding comments to code. When documenting during refactoring. When tempted to explain "what changed". When writing file headers. When reviewing comments that reference history.
 version: 1.0.0
 languages: all
-type: technique
 ---
 
 # Writing Evergreen Comments

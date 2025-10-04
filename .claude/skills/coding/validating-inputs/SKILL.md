@@ -4,7 +4,6 @@ description: Check all external inputs for validity - garbage in, nothing out, n
 when_to_use: Before implementing any function that receives external data. When writing functions that take parameters from users, APIs, databases, files, or other untrusted sources. When you see missing validation, no error handling, or silent failures. When implementing without thinking "what could go wrong?". When code throws TypeError, ValueError, KeyError from missing validation. When crashes or runtime errors occur. When security vulnerabilities exist (injection attacks, buffer overflow). When data corruption happens. When code fails with unexpected inputs.
 version: 1.0.0
 languages: all
-type: technique
 ---
 
 # Validating Inputs

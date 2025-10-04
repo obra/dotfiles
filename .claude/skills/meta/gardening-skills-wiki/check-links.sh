@@ -3,12 +3,7 @@
 
 SKILLS_DIR="${1:-$HOME/Documents/GitHub/dotfiles/.claude/skills}"
 
-echo "=== Checking links in skills wiki ==="
-echo "Skills directory: $SKILLS_DIR"
-echo ""
-
-# Find all @ links in markdown files
-echo "## Checking @ references..."
+echo "## Links & References"
 broken_refs=0
 
 while IFS= read -r file; do
@@ -47,15 +42,9 @@ while IFS= read -r file; do
     done
 done < <(find "$SKILLS_DIR" -type f -name "*.md")
 
-if [ $broken_refs -eq 0 ]; then
-    echo "  ✅ All @ references valid"
-else
-    echo ""
-    echo "  Found $broken_refs broken references"
-fi
+[ $broken_refs -eq 0 ] && echo "  ✅ @ references OK" || echo "  ⚠️  $broken_refs broken references"
 
 echo ""
-echo "## Checking skill references in INDEX files..."
 # Verify all skills mentioned in INDEX files exist
 find "$SKILLS_DIR" -type f -name "INDEX.md" | while read -r index_file; do
     index_dir=$(dirname "$index_file")
@@ -72,8 +61,6 @@ find "$SKILLS_DIR" -type f -name "INDEX.md" | while read -r index_file; do
 done
 
 echo ""
-echo "## Checking for orphaned skills (not in any INDEX)..."
-# Find skills not referenced in their category INDEX
 find "$SKILLS_DIR" -type f -path "*/*/SKILL.md" | while read -r skill_file; do
     skill_dir=$(basename $(dirname "$skill_file"))
     category_dir=$(dirname $(dirname "$skill_file"))
@@ -85,6 +72,3 @@ find "$SKILLS_DIR" -type f -path "*/*/SKILL.md" | while read -r skill_file; do
         fi
     fi
 done
-
-echo ""
-echo "=== Link check complete ==="

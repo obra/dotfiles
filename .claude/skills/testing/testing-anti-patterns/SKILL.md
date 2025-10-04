@@ -3,7 +3,6 @@ name: Testing Anti-Patterns
 description: Never test mock behavior. Never add test-only methods to production classes. Understand dependencies before mocking.
 when_to_use: When writing tests. When adding mocks. When fixing failing tests. When tempted to add cleanup methods to production code. Before asserting on mock elements.
 version: 1.0.0
-type: rule
 ---
 
 # Testing Anti-Patterns

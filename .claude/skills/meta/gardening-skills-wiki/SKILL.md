@@ -4,7 +4,6 @@ description: Maintain skills wiki health - check links, naming, cross-references
 when_to_use: When adding/removing skills. When reorganizing categories. When links feel broken. Periodically (weekly/monthly) to maintain wiki health. When INDEX files don't match directory structure. When cross-references might be stale.
 version: 1.0.0
 languages: bash
-type: technique
 ---
 
 # Gardening Skills Wiki

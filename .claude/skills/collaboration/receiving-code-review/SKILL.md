@@ -3,7 +3,6 @@ name: Code Review Reception
 description: Receive and act on code review feedback with technical rigor, not performative agreement or blind implementation
 when_to_use: When receiving code review feedback from Jesse or external reviewers. Before implementing review suggestions. When PR comments arrive. When feedback seems wrong or unclear.
 version: 1.0.0
-type: workflow
 ---
 
 # Code Review Reception

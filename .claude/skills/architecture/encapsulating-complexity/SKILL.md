@@ -4,7 +4,6 @@ description: Hide implementation details behind interfaces - work at domain leve
 when_to_use: When designing any class or interface. When implementation details leak into public API. When storage format (JSON, SQL, files) is exposed. When working with raw data structures (dicts, rows) instead of domain objects. When client code must know HOW things work internally. When changing implementation would break client code. When database queries mixed with business logic. When switching storage type requires interface changes. When tests must know internal structure.
 version: 1.0.0
 languages: all
-type: pattern
 ---
 
 # Encapsulating Complexity

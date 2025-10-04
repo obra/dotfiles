@@ -4,7 +4,6 @@ description: Name code by what it does in the domain, not how it's implemented o
 when_to_use: When naming variables, functions, classes, modules. When reviewing code with vague names. When refactoring and tempted to add "New" or "Improved". When using implementation details like "ZodValidator" or pattern names like "Factory".
 version: 1.0.0
 languages: all
-type: technique
 ---
 
 # Domain-Focused Naming

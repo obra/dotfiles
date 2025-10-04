@@ -3,12 +3,7 @@
 
 SKILLS_DIR="${1:-$HOME/Documents/GitHub/dotfiles/.claude/skills}"
 
-echo "=== Checking naming consistency ==="
-echo "Skills directory: $SKILLS_DIR"
-echo ""
-
-# Check skill directory naming (should be kebab-case gerunds when appropriate)
-echo "## Checking directory names..."
+echo "## Naming & Structure"
 issues=0
 
 find "$SKILLS_DIR" -type d -mindepth 2 -maxdepth 2 | while read -r dir; do
@@ -41,21 +36,14 @@ find "$SKILLS_DIR" -type d -mindepth 2 -maxdepth 2 | while read -r dir; do
     fi
 done
 
-if [ $issues -eq 0 ]; then
-    echo "  ✅ All directory names follow conventions"
-else
-    echo "  Found $issues naming issues"
-fi
+[ $issues -eq 0 ] && echo "  ✅ Directory names OK" || echo "  ⚠️  $issues naming issues"
 
 echo ""
-echo "## Checking for empty directories..."
 find "$SKILLS_DIR" -type d -empty | while read -r empty_dir; do
     echo "  ⚠️  EMPTY: $(realpath --relative-to="$SKILLS_DIR" "$empty_dir" 2>/dev/null || echo "$empty_dir")"
 done
 
 echo ""
-echo "## Checking frontmatter consistency..."
-# Check that all SKILL.md files have proper frontmatter
 find "$SKILLS_DIR" -type f -name "SKILL.md" | while read -r skill_file; do
     skill_name=$(basename $(dirname "$skill_file"))
 
@@ -76,16 +64,9 @@ find "$SKILLS_DIR" -type f -name "SKILL.md" | while read -r skill_file; do
         echo "  ⚠️  MISSING 'version': $skill_name/SKILL.md"
     fi
 
-    if ! grep -q "^type:" "$skill_file"; then
-        echo "  ⚠️  MISSING 'type': $skill_name/SKILL.md"
-    fi
-
     # Check for active voice in name (should not start with "How to")
     name_value=$(grep "^name:" "$skill_file" | head -1 | cut -d: -f2- | xargs)
     if [[ "$name_value" =~ ^How\ to ]]; then
         echo "  ⚠️  Passive name: $skill_name has 'How to' prefix (prefer active voice)"
     fi
 done
-
-echo ""
-echo "=== Naming check complete ==="

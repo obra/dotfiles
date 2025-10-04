@@ -4,7 +4,6 @@ description: Choose names that fully and accurately describe what the variable r
 when_to_use: When naming any variable, function, class, or parameter. When struggling to name something (warning sign of design problem). When seeing cryptic names like x, temp, data. When abbreviating names. When code is hard to understand.
 version: 1.0.0
 languages: all
-type: technique
 ---
 
 # Naming Variables

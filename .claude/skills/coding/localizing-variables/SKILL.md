@@ -4,7 +4,6 @@ description: Declare variables in smallest possible scope, initialize close to f
 when_to_use: When writing any code with variables. When variables are declared at top of function but used later. When related statements are scattered. When variable scope is larger than necessary. When you see long variable live times or large span between references. When can't find where variable is initialized. When variable has stale or unexpected value. When forgot to reset counter or accumulator. When initialization errors occur. When variables declared far from first use. When window of vulnerability is large. When must scroll to see variable declaration and usage. When reviewing pull requests with wide variable scope. When refactoring functions with many local variables.
 version: 1.0.0
 languages: all
-type: technique
 ---
 
 # Localizing Variables

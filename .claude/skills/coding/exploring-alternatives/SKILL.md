@@ -4,7 +4,6 @@ description: Try 2-3 different approaches before implementing - don't settle for
 when_to_use: Before implementing any non-trivial solution. When you have your first idea and are ready to code. When solution feels complex. When choosing between approaches. When stuck on a design. When tempted to implement first idea immediately. When asking "is this the best approach?". When wondering "should I use library or custom code?". When evaluating trade-offs. When solution feels forced or awkward. When didn't consider alternatives. When implementation is fighting you. When choosing data structures or algorithms. When design decision needs justification. When comparing manual implementation vs using library. When solution has multiple viable paths.
 version: 1.0.0
 languages: all
-type: technique
 ---
 
 # Exploring Alternatives

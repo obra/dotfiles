@@ -67,8 +67,6 @@ Way of thinking about problems (flatten-with-flags, test-invariants)
 ### Reference
 API docs, syntax guides, tool documentation (office docs)
 
-All use same structure - type in frontmatter for context, not organization.
-
 ## Directory Structure
 
 ```
@@ -98,7 +96,6 @@ description: One-line summary of what this does
 when_to_use: Symptoms and situations when you need this (CSO-critical)
 version: 1.0.0
 languages: all | [typescript, python] | etc
-type: technique | pattern | reference
 dependencies: (optional) Required tools/libraries
 ---
 

@@ -3,11 +3,7 @@
 
 SKILLS_DIR="${1:-$HOME/Documents/GitHub/dotfiles/.claude/skills}"
 
-echo "=== Checking INDEX coverage ==="
-echo "Skills directory: $SKILLS_DIR"
-echo ""
-
-echo "## Checking category INDEX files..."
+echo "## INDEX Coverage"
 # For each category with an INDEX
 for category_dir in "$SKILLS_DIR"/*/; do
     category=$(basename "$category_dir")
@@ -19,8 +15,6 @@ for category_dir in "$SKILLS_DIR"/*/; do
 
     # Skip if no INDEX (meta directories might not have one)
     [[ ! -f "$index_file" ]] && continue
-
-    echo "### $category/INDEX.md"
 
     # Find all SKILL.md files in this category
     skill_count=0
@@ -40,42 +34,14 @@ for category_dir in "$SKILLS_DIR"/*/; do
         fi
     done < <(find "$category_dir" -mindepth 2 -type f -name "SKILL.md")
 
-    if [ $skill_count -eq 0 ]; then
-        echo "  ℹ️  No skills in this category"
-    elif [ $missing_count -eq 0 ]; then
-        echo "  ✅ All $skill_count skills indexed"
-    else
-        echo "  ⚠️  $missing_count/$skill_count skills missing from INDEX"
+    if [ $skill_count -gt 0 ] && [ $missing_count -eq 0 ]; then
+        echo "  ✅ $category: all $skill_count skills indexed"
+    elif [ $missing_count -gt 0 ]; then
+        echo "  ⚠️  $category: $missing_count/$skill_count skills missing"
     fi
-
-    echo ""
 done
 
-echo "## Checking main INDEX.md..."
-main_index="$SKILLS_DIR/INDEX.md"
-
-if [[ ! -f "$main_index" ]]; then
-    echo "  ❌ Main INDEX.md missing!"
-else
-    # Check that all categories with INDEX files are listed
-    for category_dir in "$SKILLS_DIR"/*/; do
-        category=$(basename "$category_dir")
-
-        [[ ! -d "$category_dir" ]] && continue
-
-        index_file="$category_dir/INDEX.md"
-        [[ ! -f "$index_file" ]] && continue
-
-        if grep -q "@$category/INDEX.md" "$main_index"; then
-            echo "  ✅ $category linked in main INDEX"
-        else
-            echo "  ❌ MISSING: @$category/INDEX.md not in main INDEX"
-        fi
-    done
-fi
-
 echo ""
-echo "## Checking for description/when_to_use in INDEX entries..."
 # Verify INDEX entries have descriptions
 find "$SKILLS_DIR" -type f -name "INDEX.md" | while read -r index_file; do
     category=$(basename $(dirname "$index_file"))
@@ -102,6 +68,3 @@ find "$SKILLS_DIR" -type f -name "INDEX.md" | while read -r index_file; do
         fi
     done
 done
-
-echo ""
-echo "=== INDEX coverage check complete ==="

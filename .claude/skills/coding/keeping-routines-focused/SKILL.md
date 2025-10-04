@@ -4,7 +4,6 @@ description: Each routine does one thing and does it well - extract when routine
 when_to_use: When writing any function or method. When routine does multiple things. When routine description has "and" in it. When routine is hard to name. When routine is longer than 200 lines. When parameter list exceeds 7 parameters. When refactoring complex code. When god function exists. When function does too much. When tests are hard to write for a function. When mixed abstraction levels in one routine. When code review flags "too complex" or "does too many things". When cohesion is weak. When violating single responsibility principle. When function has many local variables.
 version: 1.0.0
 languages: all
-type: technique
 ---
 
 # Keeping Routines Focused

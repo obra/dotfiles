@@ -4,7 +4,6 @@ description: Managing complexity is software's primary technical imperative - al
 when_to_use: Before and during any design or implementation. When solution feels complicated. When code is hard to understand. When you can't keep entire design in mind. When complexity is proliferating. When applying methods mechanically without understanding why.
 version: 1.0.0
 languages: all
-type: pattern
 ---
 
 # Reducing Complexity

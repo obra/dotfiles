@@ -4,7 +4,6 @@ description: Class interfaces present one cohesive abstraction - don't mix domai
 when_to_use: When designing any class interface. When class has mixed responsibilities. When class groups unrelated functions. When domain object knows about JSON/XML/database. When class description has multiple purposes. When interface mixes high and low level operations. When temporal cohesion exists (grouped by when, not what). When reviewing classes for abstraction quality. When creating grab-bag utility classes. When mixing serialization with domain logic. When persistence mixed with business logic. When class difficult to name clearly. When cohesion is weak. When single responsibility violated at class level. When Abstract Data Type unclear.
 version: 1.0.0
 languages: all
-type: pattern
 ---
 
 # Maintaining Consistent Abstractions

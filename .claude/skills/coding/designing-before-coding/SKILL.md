@@ -4,7 +4,6 @@ description: Design in pseudocode first, iterate approaches, then translate to c
 when_to_use: Before implementing any non-trivial routine or class. When jumping straight to code. When code feels hack-y or you're unsure how to proceed. When you catch yourself in "just one more compile" cycle. When tempted to code first and figure it out later.
 version: 1.0.0
 languages: all
-type: technique
 ---
 
 # Designing Before Coding

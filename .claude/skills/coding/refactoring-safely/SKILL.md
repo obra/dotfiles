@@ -4,7 +4,6 @@ description: Refactor with tests first, one change at a time, never mix refactor
 when_to_use: Before refactoring any code. When improving code structure or naming. When extracting methods or classes. When code review requests changes. When you discover a bug during refactoring. When tempted to "fix while I'm here". When making multiple changes at once. When refactoring without tests. When mixing behavior changes with structure changes. When combining bug fix with refactoring. When extracting multiple methods simultaneously. When tests don't exist for code being refactored. When scope creep during refactoring.
 version: 1.0.0
 languages: all
-type: technique
 ---
 
 # Refactoring Safely

@@ -20,6 +20,8 @@ Core software engineering practices for writing clean, maintainable code.
 
 - @localizing-variables/SKILL.md - Declare variables in smallest possible scope, initialize close to first use, minimize span and live time. Use when writing any code with variables, when variables are scattered or declared at top of function, when reviewing code with large variable scope.
 
+- @single-purpose-variables/SKILL.md - Use each variable for exactly one purpose - no hybrid coupling or hidden meanings. Use when variable represents different things at different times, when -1 or special values indicate errors, when reusing temp for unrelated purposes, when variable meaning changes.
+
 ### Code Quality
 
 - @validating-inputs/SKILL.md - Check all external inputs for validity - garbage in, nothing out. Use before implementing any function receiving external data, when writing functions taking parameters from users/APIs/databases, when you see missing validation or silent failures.
@@ -28,7 +30,11 @@ Core software engineering practices for writing clean, maintainable code.
 
 - @refactoring-safely/SKILL.md - Refactor with tests first, one change at a time, never mix refactoring with bug fixes or features. Use before refactoring any code, when discovering bugs during refactoring, when tempted to "fix while I'm here", when making multiple changes at once, when refactoring without tests.
 
+- @simplifying-control-flow/SKILL.md - Flatten nested conditionals with early returns or table-driven methods - keep nesting depth under 3 levels. Use when writing conditional logic, when nesting depth exceeds 2-3 levels, when multiple conditions determine outcome, when business rules encoded in nested ifs.
+
 ### Documentation
+
+- @commenting-intent/SKILL.md - Comment WHY code exists and non-obvious decisions, not WHAT code does (mechanics). Use when adding comments, when code review requests more comments, when over-commenting obvious code, when magic numbers exist, when non-obvious decisions made.
 
 - @writing-evergreen-comments/SKILL.md - Write comments explaining WHAT and WHY, never temporal context or history. Use when documenting code, especially during refactoring when tempted to explain "what changed".
 

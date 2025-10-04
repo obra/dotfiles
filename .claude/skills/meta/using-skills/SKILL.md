@@ -3,7 +3,6 @@ name: Using Skills Effectively
 description: How to discover and apply existing skills to your current work
 when_to_use: When starting a task, encountering a problem, or feeling stuck. When a skill has a checklist (must create TodoWrite todos for each item). Before working through any skill checklist mentally.
 version: 2.0.0
-type: technique
 ---
 
 # Using Skills Effectively
@@ -70,7 +69,6 @@ Then scan the directory names for relevant ones.
 ### 1. Check Frontmatter (5 seconds)
 ```yaml
 when_to_use: [Does this match my situation?]
-type: [technique/pattern/reference - what am I getting?]
 ```
 
 **Decision:** Keep reading or skip?
