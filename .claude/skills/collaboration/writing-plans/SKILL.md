@@ -1,11 +1,11 @@
 ---
-name: Writing Implementation Plans
+name: Writing Plans
 description: Create detailed implementation plans with bite-sized tasks for engineers with zero codebase context
 when_to_use: After brainstorming/design is complete. Before implementation begins. When delegating to another developer or session.
 version: 1.0.0
 ---
 
-# Writing Implementation Plans
+# Writing Plans
 
 ## Overview
 
