@@ -1,11 +1,11 @@
 ---
-name: Executing Implementation Plans
+name: Executing Plans
 description: Execute detailed plans in batches with review checkpoints
 when_to_use: When have a complete implementation plan to execute. When implementing in separate session from planning.
 version: 1.0.0
 ---
 
-# Executing Implementation Plans
+# Executing Plans
 
 ## Overview
 

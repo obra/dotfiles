@@ -1,5 +1,5 @@
 ---
-name: Parallel Agent Dispatch
+name: Dispatching Parallel Agents
 description: Use multiple Claude agents to investigate and fix independent problems concurrently
 when_to_use: Multiple unrelated failures that can be investigated independently
 version: 1.0.0
@@ -7,7 +7,7 @@ languages: all
 context: AI-assisted development (Claude Code or similar)
 ---
 
-# Parallel Agent Dispatch
+# Dispatching Parallel Agents
 
 ## Overview
 
