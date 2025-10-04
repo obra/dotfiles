@@ -10,3 +10,5 @@ Skills about skills - how to create and use the skills system.
 
 - @testing-skills-with-subagents/SKILL.md - Iteratively test and bulletproof skills using pressure scenarios and rationalization analysis. Use after writing skills that enforce discipline or rules, before deploying skills agents might want to bypass.
 
+- @gardening-skills-wiki/SKILL.md - Maintain skills wiki health with automated checks for broken links, naming consistency, and INDEX coverage. Use when adding/removing skills, reorganizing categories, or for periodic maintenance.
+

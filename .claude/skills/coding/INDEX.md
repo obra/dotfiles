@@ -26,6 +26,8 @@ Core software engineering practices for writing clean, maintainable code.
 
 - @keeping-routines-focused/SKILL.md - Each routine does one thing and does it well - extract when routines have multiple responsibilities. Use when writing any function, when routine description has "and", when routine is hard to name, when longer than 200 lines, when parameter list exceeds 7.
 
+- @refactoring-safely/SKILL.md - Refactor with tests first, one change at a time, never mix refactoring with bug fixes or features. Use before refactoring any code, when discovering bugs during refactoring, when tempted to "fix while I'm here", when making multiple changes at once, when refactoring without tests.
+
 ### Documentation
 
 - @writing-evergreen-comments/SKILL.md - Write comments explaining WHAT and WHY, never temporal context or history. Use when documenting code, especially during refactoring when tempted to explain "what changed".
