@@ -1,1 +1,1 @@
-@skills/collaboration/plan-writing/SKILL.md
+@skills/collaboration/writing-plans/SKILL.md
