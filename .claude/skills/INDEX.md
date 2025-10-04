@@ -14,6 +14,7 @@ Your personal wiki of proven techniques, patterns, and tools.
 
 ## Categories
 
+- @coding/INDEX.md - Core software engineering practices (naming, comments)
 - @testing/INDEX.md - Writing reliable, maintainable tests
 - @debugging/INDEX.md - Finding and fixing bugs systematically
 - @architecture/INDEX.md - Designing systems and data structures
@@ -26,4 +27,4 @@ Each category INDEX shows available skills with descriptions. Load the category 
 
 ## Creating New Skills
 
-See @meta/skill-creation/SKILL.md for guidelines on documenting new techniques.
+See @meta/creating-skills/SKILL.md for guidelines on documenting new techniques.

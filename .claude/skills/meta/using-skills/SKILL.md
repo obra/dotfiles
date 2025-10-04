@@ -1,8 +1,8 @@
 ---
 name: Using Skills Effectively
 description: How to discover and apply existing skills to your current work
-when_to_use: When starting a task, encountering a problem, or feeling stuck
-version: 1.0.0
+when_to_use: When starting a task, encountering a problem, or feeling stuck. When a skill has a checklist (must create TodoWrite todos for each item). Before working through any skill checklist mentally.
+version: 2.0.0
 type: technique
 ---
 
@@ -113,6 +113,39 @@ type: [technique/pattern/reference - what am I getting?]
 2. Follow the exact code/workflow
 3. Load heavy reference docs when needed
 4. Use provided scripts/tools
+
+## When Skill Has a Checklist
+
+**CRITICAL RULE: If a skill has a checklist, you MUST create TodoWrite todos for each item.**
+
+This ensures you:
+- Complete all steps systematically
+- Don't skip steps
+- Track progress visibly
+- Can't claim completion without checking all boxes
+
+**Examples of skills with checklists:**
+- Creating skills → Todo for each checklist item
+- TDD → Todo for each step (write test, watch fail, write code, etc.)
+- Systematic debugging → Todo for each phase
+- Code review → Todo for each review item
+- Any skill with step-by-step process
+
+**The pattern:**
+```
+1. Load skill with checklist
+2. Create TodoWrite todos for EACH checklist item
+3. Work through todos systematically
+4. Mark complete only when ALL checked
+```
+
+**Do NOT:**
+- Read checklist and work through it mentally
+- Skip creating todos "to save time"
+- Batch multiple checklist items into one todo
+- Mark items complete without actually doing them
+
+**Why this matters:** Checklists without tracking = steps get skipped. TodoWrite makes the process visible and enforced.
 
 ## When Skill Doesn't Quite Fit
 

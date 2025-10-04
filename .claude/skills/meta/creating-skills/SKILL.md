@@ -1,8 +1,8 @@
 ---
 name: Creating Skills
 description: How to create effective skills for future Claude instances
-when_to_use: When you discover a technique, pattern, or tool worth documenting for reuse
-version: 2.0.0
+when_to_use: When you discover a technique, pattern, or tool worth documenting for reuse. When you've written a skill and need to verify it works before deploying.
+version: 3.0.0
 languages: all
 ---
 
@@ -232,6 +232,94 @@ pptx/
 ```
 When: Reference material too large for inline
 
+## The Testing Law
+
+```
+ALL SKILLS MUST BE TESTED WITH SUBAGENTS BEFORE DEPLOYMENT
+```
+
+**No exceptions:**
+- Don't skip because "it's just a reference"
+- Don't skip because "it's obviously clear"
+- Don't skip because testing is tedious
+- Don't skip because you're confident
+- Don't skip because you're in a hurry
+- Testing means testing. Run scenarios with subagents.
+
+Untested skills have issues. Always. Testing reveals:
+- Unclear instructions
+- Missing steps
+- Confusing wording
+- Gaps in coverage
+- Loopholes to close
+- Better ways to explain things
+
+**15 minutes testing > hours debugging bad skill usage.**
+
+## Testing All Skill Types
+
+Different skill types need different test approaches:
+
+### Discipline-Enforcing Skills (rules/requirements)
+
+**Examples:** TDD, verification-before-completion, designing-before-coding
+
+**Test with:**
+- Academic questions: Do they understand the rules?
+- Pressure scenarios: Do they comply under stress?
+- Multiple pressures combined: time + sunk cost + exhaustion
+- Identify rationalizations and add explicit counters
+
+**Success criteria:** Agent follows rule under maximum pressure
+
+### Technique Skills (how-to guides)
+
+**Examples:** condition-based-waiting, root-cause-tracing, defensive-programming
+
+**Test with:**
+- Application scenarios: Can they apply the technique correctly?
+- Variation scenarios: Do they handle edge cases?
+- Missing information tests: Do instructions have gaps?
+
+**Success criteria:** Agent successfully applies technique to new scenario
+
+### Pattern Skills (mental models)
+
+**Examples:** reducing-complexity, information-hiding concepts
+
+**Test with:**
+- Recognition scenarios: Do they recognize when pattern applies?
+- Application scenarios: Can they use the mental model?
+- Counter-examples: Do they know when NOT to apply?
+
+**Success criteria:** Agent correctly identifies when/how to apply pattern
+
+### Reference Skills (documentation/APIs)
+
+**Examples:** API documentation, command references, library guides
+
+**Test with:**
+- Retrieval scenarios: Can they find the right information?
+- Application scenarios: Can they use what they found correctly?
+- Gap testing: Are common use cases covered?
+
+**Success criteria:** Agent finds and correctly applies reference information
+
+## Common Rationalizations for Skipping Testing
+
+| Excuse | Reality |
+|--------|---------|
+| "Skill is obviously clear" | Clear to you ≠ clear to other agents. Test it. |
+| "It's just a reference" | References can have gaps, unclear sections. Test retrieval. |
+| "Testing is overkill" | Untested skills have issues. Always. 15 min testing saves hours. |
+| "I'll test if problems emerge" | Problems = agents can't use skill. Test BEFORE deploying. |
+| "Too tedious to test" | Testing is less tedious than debugging bad skill in production. |
+| "I'm confident it's good" | Overconfidence guarantees issues. Test anyway. |
+| "Academic review is enough" | Reading ≠ using. Test application scenarios. |
+| "No time to test" | Deploying untested skill wastes more time fixing it later. |
+
+**All of these mean: Test before deploying. No exceptions.**
+
 ## Bulletproofing Skills Against Rationalization
 
 Skills that enforce discipline (like TDD) need to resist rationalization. Agents are smart and will find loopholes when under pressure.
@@ -270,7 +358,7 @@ This cuts off entire class of "I'm following the spirit" rationalizations.
 
 ### Build Rationalization Table
 
-Test the skill (see next section). Every excuse agents make goes in the table:
+Capture rationalizations from baseline testing (see Testing section below). Every excuse agents make goes in the table:
 
 ```markdown
 | Excuse | Reality |
@@ -311,16 +399,41 @@ when_to_use: Every feature and bugfix. When you wrote code before tests.
 
 See @../testing-skills-with-subagents/SKILL.md for complete methodology.
 
-**Quick process:**
-1. Write skill with clear rules
-2. Test with academic questions (do they understand?)
-3. Test with pressure scenarios (do they comply?)
-4. Identify rationalizations used
-5. Add explicit counters
-6. Re-test same scenarios
-7. Repeat until bulletproof
+### The Baseline Testing Principle
 
-**Key insight:** Academic questions test understanding. Pressure scenarios test compliance. You need both.
+**CRITICAL: Test pressure scenarios BEFORE writing the skill.**
+
+This establishes baseline behavior - what do agents naturally do under pressure WITHOUT the skill? This reveals:
+- What rationalizations occur naturally
+- Which pressures are most effective
+- What the skill must prevent
+- Exact wording agents use to justify violations
+
+**Then write skill specifically countering those baseline rationalizations.**
+
+This is far more efficient than write→test→iterate.
+
+### Testing Process
+
+**For discipline-enforcing skills:**
+
+- [ ] **Create pressure scenarios first** (time pressure, sunk cost, authority, exhaustion)
+- [ ] **Run baseline tests WITHOUT skill** - what do agents naturally do?
+- [ ] **Document exact rationalizations** they use verbatim
+- [ ] **Write skill addressing those specific rationalizations** with explicit counters
+- [ ] **Test WITH skill** - do they now comply?
+- [ ] **Identify any NEW rationalizations** and add counters
+- [ ] **Re-test until bulletproof**
+
+**For other skill types:**
+
+- [ ] **Create application scenarios**
+- [ ] **Test WITHOUT skill** - can they figure it out? (baseline difficulty)
+- [ ] **Write skill** based on what was confusing
+- [ ] **Test WITH skill** - does it help?
+- [ ] **Iterate** based on gaps
+
+**Key insight:** Baseline testing (before skill) reveals what needs to be prevented. Writing first reveals what you THINK needs to be prevented. Agents are creative - test reality first.
 
 ## Anti-Patterns
 
@@ -343,7 +456,25 @@ step2 [label="read file"];
 helper1, helper2, step3, pattern4
 **Why bad:** Labels should have semantic meaning
 
+## STOP: Before Moving to Next Skill
+
+**After writing ANY skill, you MUST STOP and complete the deployment process.**
+
+**Do NOT:**
+- Create multiple skills in batch without testing each
+- Update INDEX.md before testing skills
+- Move to next skill before current one is verified
+- Skip testing because "batching is more efficient"
+
+**The deployment checklist below is MANDATORY for EACH skill.**
+
+Deploying untested skills = deploying untested code. It's a violation of quality standards.
+
 ## Skill Creation Checklist
+
+**IMPORTANT: Use TodoWrite to create todos for EACH checklist item below.**
+
+This ensures you complete all steps systematically and don't skip any.
 
 **Before writing:**
 - [ ] Technique applies broadly (not project-specific)
@@ -364,14 +495,20 @@ helper1, helper2, step3, pattern4
 - [ ] No narrative storytelling
 - [ ] Supporting files only for tools or heavy reference
 
-**If skill enforces discipline:**
+**After writing (BEFORE deploying):**
+- [ ] Test with subagents (see @../testing-skills-with-subagents/SKILL.md)
+- [ ] Use appropriate test type for skill type (see Testing All Skill Types above)
+- [ ] Iterate based on subagent feedback until skill is clear and usable
+- [ ] Address all confusion, gaps, or unclear sections found during testing
+
+**Additionally, if skill enforces discipline:**
 - [ ] Add foundational principle ("Violating letter is violating spirit")
 - [ ] Close loopholes explicitly (no "reference", no "adapt")
-- [ ] Build rationalization table (test first)
+- [ ] Build rationalization table from test results
 - [ ] Create red flags list
 - [ ] Update when_to_use with violation symptoms
-- [ ] Test with subagents (see @../testing-skills-with-subagents/SKILL.md)
-- [ ] Iterate until bulletproof
+- [ ] Use pressure scenarios (not just academic questions) in testing
+- [ ] Iterate until bulletproof against rationalization
 
 ## Discovery Workflow
 

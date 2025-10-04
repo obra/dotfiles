@@ -43,6 +43,12 @@ When asked to do something, just do it - including obvious follow-up actions nee
 - YAGNI. The best code is no code. Don't add features we don't need right now.
 - When it doesn't conflict with YAGNI, architect for extensibility and flexibility.
 
+## Skills Library
+
+You have a personal wiki of proven techniques, patterns, and tools at `~/.claude/skills/`.
+
+**RIGHT NOW, YOU MUST READ @~/.claude/skills/getting-started/SKILL.md**
+
 
 ## Test Driven Development  (TDD)
 
@@ -62,39 +68,12 @@ When asked to do something, just do it - including obvious follow-up actions nee
 
 
 
-## Naming
+## Naming and Comments
 
-  - Names MUST tell what code does, not how it's implemented or its history
-  - When changing code, never document the old behavior or the behavior change
-  - NEVER use implementation details in names (e.g., "ZodValidator", "MCPWrapper", "JSONParser")
-  - NEVER use temporal/historical context in names (e.g., "NewAPI", "LegacyHandler", "UnifiedTool", "ImprovedInterface", "EnhancedParser")
-  - NEVER use pattern names unless they add clarity (e.g., prefer "Tool" over "ToolFactory")
+YOU MUST name code by what it does in the domain, not how it's implemented or its history.
+YOU MUST write comments explaining WHAT and WHY, never temporal context or what changed.
 
-  Good names tell a story about the domain:
-  - `Tool` not `AbstractToolInterface`
-  - `RemoteTool` not `MCPToolWrapper`
-  - `Registry` not `ToolRegistryManager`
-  - `execute()` not `executeToolWithValidation()`
-
-## Code Comments
-
- - NEVER add comments explaining that something is "improved", "better", "new", "enhanced", or referencing what it used to be
- - NEVER add instructional comments telling developers what to do ("copy this pattern", "use this instead")
- - Comments should explain WHAT the code does or WHY it exists, not how it's better than something else
- - If you're refactoring, remove old comments - don't add new ones explaining the refactoring
- - YOU MUST NEVER remove code comments unless you can PROVE they are actively false. Comments are important documentation and must be preserved.
- - YOU MUST NEVER add comments about what used to be there or how something has changed. 
- - YOU MUST NEVER refer to temporal context in comments (like "recently refactored" "moved") or code. Comments should be evergreen and describe the code as it is. If you name something "new" or "enhanced" or "improved", you've probably made a mistake and MUST STOP and ask me what to do.
- - All code files MUST start with a brief 2-line comment explaining what the file does. Each line MUST start with "ABOUTME: " to make them easily greppable.
-
-  Examples:
-  // BAD: This uses Zod for validation instead of manual checking
-  // BAD: Refactored from the old validation system
-  // BAD: Wrapper around MCP tool protocol
-  // GOOD: Executes tools with validated arguments
-
-  If you catch yourself writing "new", "old", "legacy", "wrapper", "unified", or implementation details in names or comments, STOP and find a better name that describes the thing's
-  actual purpose.
+For complete methodology, see @~/.claude/skills/coding/INDEX.md
 
 ## Version Control
 
@@ -137,10 +116,4 @@ For complete methodology, see @~/.claude/skills/debugging/systematic-debugging/S
 - Document architectural decisions and their outcomes for future reference
 - Track patterns in user feedback to improve collaboration over time
 - When you notice something that should be fixed but is unrelated to your current task, document it in your journal rather than fixing it immediately
-
-## Skills Library
-
-You have a personal wiki of proven techniques, patterns, and tools at `~/.claude/skills/`.
-
-**RIGHT NOW, YOU MUST READ @~/.claude/skills/getting-started/SKILL.md**
 
