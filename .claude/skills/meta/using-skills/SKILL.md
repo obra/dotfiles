@@ -43,19 +43,6 @@ grep -r "zombie\|cleanup\|hang" ~/.claude/skills/ --include="SKILL.md"
 grep -r "nested\|structure\|flag" ~/.claude/skills/ --include="SKILL.md"
 ```
 
-### Search by Task
-
-```bash
-# Looking for techniques
-grep -r "technique" ~/.claude/skills/ --include="SKILL.md" | grep "type:"
-
-# Looking for patterns
-grep -r "pattern" ~/.claude/skills/ --include="SKILL.md" | grep "type:"
-
-# Looking for references
-grep -r "reference" ~/.claude/skills/ --include="SKILL.md" | grep "type:"
-```
-
 ### List All Skills
 
 ```bash

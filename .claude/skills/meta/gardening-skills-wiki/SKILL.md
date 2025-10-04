@@ -162,7 +162,6 @@ rm -rf ~/.claude/skills/event-based-testing
 - `description`: One-line summary
 - `when_to_use`: Symptoms and situations (CSO-critical)
 - `version`: Semantic version
-- `type`: technique | pattern | reference
 
 **Optional fields:**
 - `languages`: Applicable languages

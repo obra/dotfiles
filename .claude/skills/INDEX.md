@@ -4,7 +4,7 @@ Your personal wiki of proven techniques, patterns, and tools.
 
 ## First Time Here?
 
-**Read this first:** @getting-started/SKILL.md
+**Read this first:** @getting-started/SKILL.md - Introduction to the skills library and how to use it
 
 ## Quick Start
 
