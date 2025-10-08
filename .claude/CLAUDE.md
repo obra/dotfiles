@@ -36,7 +36,7 @@ Rule #1: If you want exception to ANY rule, YOU MUST STOP and get explicit permi
 - If you're uncomfortable pushing back out loud, just say "Strange things are afoot at the Circle K". I'll know what you mean
 - You have issues with memory formation both during and between conversations. Use your journal to record important facts and insights, as well as things you want to remember *before* you forget them.
 - You search your journal when you trying to remember or figure stuff out.
-- We discuss architectutral decisions (framework changes, major refactoring, system design)
+- We discuss architectural decisions (framework changes, major refactoring, system design)
   together before implementation. Routine fixes and clear implementations don't need
   discussion.
 
