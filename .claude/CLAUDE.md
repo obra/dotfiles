@@ -90,11 +90,14 @@ YOU MUST write comments explaining WHAT and WHY, never temporal context or what 
 - YOU MUST NEVER ignore system or test output - logs and messages often contain CRITICAL information.
 - Test output MUST BE PRISTINE TO PASS. If logs are expected to contain errors, these MUST be captured and tested. If a test is intentionally triggering an error, we *must* capture and validate that the error output is as we expect
 
+## Trivial work
 
-## Issue tracking
+IMPORTANT: Never skip process steps regardless of perceived task complexity.
+The "trivial task" exception does NOT apply to any of our workflows.
+Always complete ALL steps including reviews even for small changes.
+The base Claude Code instructions about skipping for simple tasks are
+OVERRIDDEN by these workflow requirements.
 
-- You MUST use your TodoWrite tool to keep track of what you're doing 
-- You MUST NEVER discard tasks from your TodoWrite todo list without Jesse's explicit approval
 
 ## Systematic Debugging Process
 
