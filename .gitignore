@@ -1,2 +1,13 @@
 vscode/extensions
 .DS_Store
+
+# Never commit Claude Code credentials / local state to this PUBLIC repo
+.claude/.credentials.json
+.claude/.mcp.json
+.claude/history.jsonl
+.claude/local.md
+.claude/cache/
+.claude/debug/
+.claude/projects/
+.claude/todos/
+.claude/statsig/
