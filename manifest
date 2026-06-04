@@ -1,0 +1,5 @@
+# dotfiles manifest — <repo-relative path> [macos|linux]
+# Deploy destination mirrors the path under $HOME.
+.tmux.conf
+.gitconfig
+.hammerspoon        macos
