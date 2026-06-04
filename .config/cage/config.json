@@ -1,0 +1,8 @@
+{
+  "default_credentials": {
+    "git": true,
+    "gh": true,
+    "gpg": false,
+    "npm": true
+  }
+}

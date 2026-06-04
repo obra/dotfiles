@@ -7,3 +7,11 @@ bin/coderabbit-extract
 bin/flatten.js
 bin/git-worktree-llm
 bin/idb
+.config/karabiner/karabiner.json
+.config/ccstatusline/settings.json
+.config/mise/config.toml
+.config/clipfan/tmux.conf
+.config/leash/config.toml
+.config/cage/config.json
+.config/sprout/settings.json
+.config/git/ignore

@@ -1,0 +1,84 @@
+{
+    "global": { "unsafe_ui": true },
+    "profiles": [
+        {
+            "devices": [
+                {
+                    "identifiers": {
+                        "is_keyboard": true,
+                        "product_id": 36897,
+                        "vendor_id": 11720
+                    },
+                    "simple_modifications": [
+                        {
+                            "from": { "key_code": "e" },
+                            "to": [{ "key_code": "left_arrow" }]
+                        },
+                        {
+                            "from": { "key_code": "f" },
+                            "to": [{ "key_code": "right_arrow" }]
+                        },
+                        {
+                            "from": { "key_code": "d" },
+                            "to": [{ "key_code": "down_arrow" }]
+                        },
+                        {
+                            "from": { "key_code": "c" },
+                            "to": [{ "key_code": "up_arrow" }]
+                        },
+                        {
+                            "from": { "key_code": "i" },
+                            "to": [{ "key_code": "delete_or_backspace" }]
+                        },
+                        {
+                            "from": { "key_code": "g" },
+                            "to": [{ "key_code": "return_or_enter" }]
+                        },
+                        {
+                            "from": { "key_code": "h" },
+                            "to": [{ "key_code": "spacebar" }]
+                        },
+                        {
+                            "from": { "key_code": "j" },
+                            "to": [{ "key_code": "f13" }]
+                        }
+                    ]
+                }
+            ],
+            "name": "Default profile",
+            "selected": true,
+            "virtual_hid_keyboard": { "keyboard_type_v2": "ansi" }
+        }
+    ],
+    "rules": [
+        {
+            "description": "Use Seiren Mute button as Dictation PTT",
+            "manipulators": [
+                {
+                    "from": { "consumer_key_code": "mute" },
+                    "to": [
+                        {
+                            "key_code": "fn",
+                            "modifiers": []
+                        },
+                        {
+                            "key_code": "fn",
+                            "modifiers": []
+                        }
+                    ],
+                    "to_after_key_up": [
+                        {
+                            "key_code": "fn",
+                            "modifiers": []
+                        },
+                        {
+                            "key_code": "fn",
+                            "modifiers": []
+                        }
+                    ],
+                    "type": "basic"
+                }
+            ]
+        }
+    ]
+}

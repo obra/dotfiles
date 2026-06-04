@@ -1,0 +1,78 @@
+{
+  "version": 3,
+  "lines": [
+    [
+      {
+        "id": "5",
+        "type": "block-timer",
+        "color": "magenta"
+      },
+      {
+        "id": "1",
+        "type": "model",
+        "color": "cyan"
+      },
+      {
+        "id": "c381fccb-a27d-4709-b575-ebcb4adb8de8",
+        "type": "context-length",
+        "backgroundColor": "bgBlue"
+      },
+      {
+        "id": "3",
+        "type": "context-percentage",
+        "color": "brightBlack"
+      },
+      {
+        "id": "7",
+        "type": "session-cost",
+        "color": "yellow"
+      }
+    ],
+    [
+      {
+        "id": "7dd2bbe9-cd2d-417a-b5fd-6b4a0f8f0c2b",
+        "type": "git-branch",
+        "backgroundColor": "bgBrightYellow"
+      },
+      {
+        "id": "c9631f4d-9fd4-48d2-b51b-c46345c50b30",
+        "type": "git-worktree",
+        "backgroundColor": "bgRed"
+      },
+      {
+        "id": "abe8d41b-30a5-40d2-abeb-be07c8ffb0e2",
+        "type": "current-working-dir",
+        "backgroundColor": "bgYellow"
+      },
+      {
+        "id": "15a7fe56-f3a8-41e3-81ff-68400a4c914e",
+        "type": "git-changes",
+        "backgroundColor": "bgBrightYellow"
+      },
+      {
+        "id": "5b91ffa7-4536-4134-aa09-c21b48ea2105",
+        "type": "custom-text",
+        "backgroundColor": "bgYellow"
+      }
+    ]
+  ],
+  "flexMode": "full",
+  "compactThreshold": 60,
+  "colorLevel": 3,
+  "inheritSeparatorColors": false,
+  "globalBold": false,
+  "powerline": {
+    "enabled": true,
+    "separators": [
+      ""
+    ],
+    "separatorInvertBackground": [
+      true
+    ],
+    "startCaps": [],
+    "endCaps": [],
+    "autoAlign": false,
+    "theme": "nord-aurora"
+  },
+  "defaultPadding": " "
+}

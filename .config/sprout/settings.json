@@ -1,0 +1,53 @@
+{
+	"version": 4,
+	"providers": [
+		{
+			"id": "anthropic",
+			"kind": "anthropic",
+			"label": "Anthropic",
+			"enabled": true,
+			"createdAt": "2026-05-20T15:45:57.775Z",
+			"updatedAt": "2026-05-20T15:45:57.775Z"
+		},
+		{
+			"id": "openai",
+			"kind": "openai",
+			"label": "OpenAI",
+			"enabled": true,
+			"createdAt": "2026-05-20T15:45:57.818Z",
+			"updatedAt": "2026-05-20T15:45:57.818Z"
+		},
+		{
+			"id": "gemini",
+			"kind": "gemini",
+			"label": "Gemini",
+			"enabled": true,
+			"createdAt": "2026-05-20T15:45:57.847Z",
+			"updatedAt": "2026-05-20T15:45:57.847Z"
+		},
+		{
+			"id": "openai-codex",
+			"kind": "openai-codex",
+			"label": "Codex",
+			"enabled": true,
+			"createdAt": "2026-05-20T15:46:24.512Z",
+			"updatedAt": "2026-05-20T15:46:24.512Z"
+		}
+	],
+	"defaults": {
+		"best": {
+			"providerId": "openai-codex",
+			"modelId": "gpt-5.5"
+		},
+		"balanced": {
+			"providerId": "openai-codex",
+			"modelId": "gpt-5.4-mini"
+		},
+		"fast": {
+			"providerId": "openai-codex",
+			"modelId": "gpt-5.3-codex-spark"
+		}
+	},
+	"memoryModels": {},
+	"agentModelOverrides": {}
+}
