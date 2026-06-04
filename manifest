@@ -18,3 +18,4 @@ bin/idb
 .config/zellij/config.kdl
 .p10k.zsh
 .p10k-8color.zsh
+.coderabbit-extractor
