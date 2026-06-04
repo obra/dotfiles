@@ -14,8 +14,9 @@ Run `./install.sh` only on a new machine or after adding a NEW file to the manif
 - `sh test/run.sh` — run the test suite.
 
 ## Secrets
-Secrets never live in this repo. Shell config calls `secret <name>` (see `lib/secret.sh`), which reads
-from 1Password (`op`) or Bitwarden (`rbw`/`bw`), whichever is authenticated on the machine.
+Secrets never live in this repo. Shell config calls `secret <name>` (see `lib/secret.sh`), which looks
+the secret up by item title in 1Password (`op`) first, then Bitwarden (`rbw`/`bw`). Full setup,
+conventions, and patterns are in [docs/SECRETS.md](docs/SECRETS.md).
 
 ## Bootstrap a new machine
 1. `git clone https://github.com/obra/dotfiles ~/git/dotfiles`
