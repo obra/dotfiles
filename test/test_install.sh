@@ -62,4 +62,18 @@ if [ -d "$TMP/home/.dotfiles-backup" ]; then b=exists; else b=absent; fi
 assert_eq "absent" "$b" "no backup created on idempotent re-run"
 rm -rf "$TMP"
 
+# --- conflict: pre-existing real file is backed up ---
+TMP=$(mktempd)
+mkdir -p "$TMP/repo" "$TMP/home"
+echo "from-repo" > "$TMP/repo/c.conf"
+echo "pre-existing-user-content" > "$TMP/home/c.conf"   # real file in the way
+cp "$REPO/install.sh" "$TMP/repo/install.sh"
+printf 'c.conf\n' > "$TMP/repo/manifest"
+UNAME_OVERRIDE=Darwin HOME="$TMP/home" sh "$TMP/repo/install.sh" >/dev/null
+assert_symlink_to "$TMP/home/c.conf" "$TMP/repo/c.conf" "conflicting file replaced by symlink"
+# the original content must survive in the backup dir
+found=$(find "$TMP/home/.dotfiles-backup" -name c.conf -exec cat {} \; 2>/dev/null)
+assert_eq "pre-existing-user-content" "$found" "original content preserved in backup"
+rm -rf "$TMP"
+
 printf 'RESULT run=%s failed=%s\n' "$TESTS_RUN" "$TESTS_FAILED"
