@@ -40,6 +40,7 @@ process_manifest() {
 }
 
 TS=$(date +%Y%m%d-%H%M%S)
+
 BACKUP_DIR="$HOME/.dotfiles-backup/$TS"
 n_linked=0; n_skipped=0; n_backed=0; n_missing=0
 
@@ -80,3 +81,5 @@ link_one() {
 }
 
 process_manifest
+printf '\nlinked=%s skipped=%s backed_up=%s missing=%s\n' \
+  "$n_linked" "$n_skipped" "$n_backed" "$n_missing"

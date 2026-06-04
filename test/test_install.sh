@@ -47,4 +47,19 @@ if [ -d "$TMP/home/sub" ] && [ ! -L "$TMP/home/sub" ]; then p=real; else p=notre
 assert_eq "real" "$p" "parent dir ~/sub is a real directory"
 rm -rf "$TMP"
 
+# --- idempotency: second run makes no changes ---
+TMP=$(mktempd)
+mkdir -p "$TMP/repo" "$TMP/home"
+echo x > "$TMP/repo/a.conf"
+cp "$REPO/install.sh" "$TMP/repo/install.sh"
+printf 'a.conf\n' > "$TMP/repo/manifest"
+UNAME_OVERRIDE=Darwin HOME="$TMP/home" sh "$TMP/repo/install.sh" >/dev/null
+out2=$(UNAME_OVERRIDE=Darwin HOME="$TMP/home" sh "$TMP/repo/install.sh")
+echo "$out2" | grep -q 'linked=0' && z=yes || z=no
+assert_eq "yes" "$z" "second run links nothing (idempotent)"
+# no backup dir should be created on the clean second run
+if [ -d "$TMP/home/.dotfiles-backup" ]; then b=exists; else b=absent; fi
+assert_eq "absent" "$b" "no backup created on idempotent re-run"
+rm -rf "$TMP"
+
 printf 'RESULT run=%s failed=%s\n' "$TESTS_RUN" "$TESTS_FAILED"
