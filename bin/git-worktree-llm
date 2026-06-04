@@ -1,0 +1,270 @@
+#!/bin/bash
+
+# git-worktree-llm - Create a git worktree and start new feature development with AI assistance
+
+set -uo pipefail
+
+# Color functions for output
+color_cyan() { echo -e "\033[36m$1\033[0m"; }
+color_green() { echo -e "\033[32m$1\033[0m"; }
+color_yellow() { echo -e "\033[33m$1\033[0m"; }
+color_red() { echo -e "\033[31m$1\033[0m"; }
+
+# Get the default branch (main or master) for this repo
+git-default-branch() {
+    # Try to get the default branch from the origin remote
+    local remote_default_branch
+    remote_default_branch=$(git remote show origin 2>/dev/null | grep "HEAD branch" | sed 's/.*: //' || true)
+
+    if [[ -n "$remote_default_branch" ]]; then
+        echo "$remote_default_branch"
+        return 0
+    fi
+
+    # If we can't get it from remote, check if main or master exists locally
+    if git show-ref --verify --quiet refs/heads/main; then
+        echo "main"
+    elif git show-ref --verify --quiet refs/heads/master; then
+        echo "master"
+    else
+        # Default to main if we can't determine
+        echo "main"
+    fi
+}
+
+# Convert branch name to a safe directory name
+# Replace slashes with hyphens to create valid directory names
+branch-to-dirname() {
+    local branch="$1"
+    echo "${branch//\//-}"
+}
+
+# Navigate to a git worktree by branch name, creating it if needed
+git-worktree-switch() {
+    if [[ $# -eq 0 ]]; then
+        color_red "Error: Branch name required." >&2
+        return 1
+    fi
+
+    local branch="$1"
+
+    # Check if inside a git repository
+    if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+        color_red "Error: Not in a git repository." >&2
+        return 1
+    fi
+
+    # Try to find existing worktree with this branch
+    local current_path=""
+
+    while IFS= read -r line; do
+        if [[ $line == worktree* ]]; then
+            current_path="${line#worktree }"
+        elif [[ $line == "branch refs/heads/$branch" ]]; then
+            # Found matching branch worktree
+            cd "$current_path"
+            echo "$(color_green "Switched to worktree for") $(color_yellow "$branch")"
+            return 0
+        fi
+    done < <(git worktree list --porcelain 2>/dev/null || true)
+
+    # No worktree found - check if branch exists and create if so
+    if git show-ref --verify --quiet "refs/heads/$branch"; then
+        local git_common_dir
+        git_common_dir=$(git rev-parse --git-common-dir)
+        local repo_root
+        repo_root=$(dirname "$git_common_dir")
+        local safe_branch_name
+        safe_branch_name=$(branch-to-dirname "$branch")
+        local worktree_path="$repo_root/.worktrees/$safe_branch_name"
+
+        if git worktree add "$worktree_path" "$branch"; then
+            cd "$worktree_path"
+            echo "$(color_green "Created and switched to worktree for") $(color_yellow "$branch")"
+            return 0
+        else
+            color_red "Error: Failed to create worktree for branch '$branch'." >&2
+            return 1
+        fi
+    else
+        color_red "Error: No worktree found for branch '$branch' and branch does not exist." >&2
+        return 1
+    fi
+}
+
+# Create a new git worktree and navigate to it
+git-worktree-create() {
+    local branch_name="$1"
+
+    if [[ -z "$branch_name" ]]; then
+        color_red "Error: Branch name required." >&2
+        return 1
+    fi
+
+    # Check if inside a git repository
+    if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+        color_red "Error: Not in a git repository." >&2
+        return 1
+    fi
+
+    # Try to switch to existing worktree first
+    if git-worktree-switch "$branch_name" 2>/dev/null; then
+        return 0
+    fi
+
+    # No existing worktree, create one
+    local git_common_dir
+    git_common_dir=$(git rev-parse --git-common-dir)
+    local repo_root
+    repo_root=$(dirname "$git_common_dir")
+    local safe_branch_name
+    safe_branch_name=$(branch-to-dirname "$branch_name")
+    local worktree_path="$repo_root/.worktrees/$safe_branch_name"
+
+    # Ensure .worktrees directory exists
+    mkdir -p "$repo_root/.worktrees"
+
+    # Check if branch exists
+    if git show-ref --verify --quiet "refs/heads/$branch_name"; then
+        # Branch exists, don't use -b flag
+        if git worktree add "$worktree_path" "$branch_name"; then
+            cd "$worktree_path"
+            echo "$(color_green "Switched to existing worktree for") $(color_yellow "$branch_name")"
+        else
+            color_red "Error: Failed to create worktree for existing branch '$branch_name'." >&2
+            return 1
+        fi
+    else
+        # Branch doesn't exist, create it from default branch
+        local default_branch
+        default_branch=$(git-default-branch)
+
+        if git worktree add "$worktree_path" -b "$branch_name" "$default_branch"; then
+            cd "$worktree_path"
+            echo "$(color_green "Created new worktree and branch") $(color_yellow "$branch_name") $(color_green "from") $(color_yellow "$default_branch")"
+        else
+            color_red "Error: Failed to create new worktree and branch '$branch_name'." >&2
+            return 1
+        fi
+    fi
+}
+
+# Run background setup if available
+run-background-setup() {
+    # Run setup in background (assumes 'just' command exists)
+    if command -v just >/dev/null 2>&1; then
+        echo "$(color_cyan "Running background setup...")"
+        nohup just setup-worktree </dev/null >/dev/null 2>&1 & disown
+    fi
+}
+
+# Start Claude or provide fallback message
+start-claude() {
+    local branch_name="$1"
+
+    if command -v claude >/dev/null 2>&1; then
+        echo "$(color_cyan "Starting Claude for AI assistance...")"
+        claude
+    else
+        echo "$(color_yellow "Claude command not found.")"
+        echo "$(color_green "Worktree created successfully at:") $(color_cyan "$(pwd)")"
+        echo "$(color_green "You can now start working on branch:") $(color_yellow "$branch_name")"
+    fi
+}
+
+# Main function: Create a git worktree and start claude
+git-worktree-llm() {
+    local branch_name="$1"
+
+    if [[ -z "$branch_name" ]]; then
+        color_red "Usage: git worktree-llm <branch-name>" >&2
+        color_red "Example: git worktree-llm feature-auth" >&2
+        color_red "Example: git worktree-llm feat/add-authentication" >&2
+        return 1
+    fi
+
+    # Validate branch name (basic validation)
+    if [[ "$branch_name" =~ ^[a-zA-Z0-9][a-zA-Z0-9/_-]*$ ]]; then
+        echo "$(color_cyan "Creating worktree for branch:") $(color_yellow "$branch_name")"
+    else
+        color_red "Error: Invalid branch name. Use alphanumeric characters, hyphens, underscores, and forward slashes only." >&2
+        return 1
+    fi
+
+    # Create the worktree
+    if git-worktree-create "$branch_name"; then
+        # Run setup in background
+        run-background-setup
+
+        # Start claude
+        start-claude "$branch_name"
+    else
+        color_red "Failed to create worktree for branch: $branch_name" >&2
+        return 1
+    fi
+}
+
+# Show help
+show_help() {
+    cat << 'EOF'
+git-worktree-llm - Start new feature development with AI assistance
+
+USAGE:
+    git worktree-llm <branch-name>
+
+DESCRIPTION:
+    Creates a new git worktree for the specified branch and starts Claude for
+    AI-assisted development. If the branch doesn't exist, it will be created
+    from the default branch (main/master).
+
+    Branch names with forward slashes (e.g., feat/add-auth) are supported
+    and will create directories with hyphens (e.g., .worktrees/feat-add-auth).
+
+    This script:
+    1. Creates a worktree in .worktrees/<safe-branch-name>
+    2. Runs 'just setup-worktree' in the background (if available)
+    3. Starts Claude for AI assistance (if available)
+
+EXAMPLES:
+    git worktree-llm feature-auth           # Start new feature branch
+    git worktree-llm feat/add-auth          # Branch with namespace
+    git worktree-llm bugfix/login-issue     # Bugfix with namespace
+
+WORKFLOW:
+    1. git worktree-llm feature-name        # Start new feature
+    2. # Work with Claude...
+    3. git worktree-merge                   # Complete and merge (separate command)
+
+NOTES:
+    - Branch names are validated for safety
+    - Slashes in branch names become hyphens in directory names
+    - Existing worktrees are reused if found
+    - Default branch (main/master) is auto-detected
+
+SEE ALSO:
+    git-worktree-merge - Complete and merge feature branch
+EOF
+}
+
+# Main command handling
+main() {
+    case "${1:-}" in
+        "help"|"-h"|"--help")
+            show_help
+            ;;
+        "")
+            color_red "Error: Branch name required." >&2
+            echo
+            show_help
+            exit 1
+            ;;
+        *)
+            git-worktree-llm "$1"
+            ;;
+    esac
+}
+
+# Only run main if script is executed directly (not sourced)
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]] || [[ $# -gt 0 ]]; then
+    main "$@"
+fi

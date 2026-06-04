@@ -3,3 +3,7 @@
 .tmux.conf
 .gitconfig
 .hammerspoon        macos
+bin/coderabbit-extract
+bin/flatten.js
+bin/git-worktree-llm
+bin/idb
