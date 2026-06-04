@@ -103,7 +103,6 @@
 	#pager = diff-so-fancy | less --tabs=4 -RFX
 	# pager = delta
         attributesfile = ~/.gitattributes
-	hooksPath = /Users/jesse/.git_hooks
 	excludesfile = /Users/jesse/.gitignore_global
 [fsck]
         zeroPaddedFilemode = ignore
@@ -169,3 +168,9 @@
 	trustExitCode = true
 [coderabbit]
 	machineId = cli/60abdcb1e42347f4b3e64330412605d7
+[credential "https://github.com"]
+	helper = 
+	helper = !/opt/homebrew/bin/gh auth git-credential
+[credential "https://gist.github.com"]
+	helper =
+	helper = !/opt/homebrew/bin/gh auth git-credential

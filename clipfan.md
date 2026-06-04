@@ -4,17 +4,26 @@
 sync across the fleet (Mac pasteboard + each remote's OS clipboard + tmux paste
 buffer), and gives the Mac menubar app a searchable clipboard history.
 
-These dotfiles carry only the **public** tmux integration. The shared key is a
-credential and is **not** stored in any repo.
+The product owns its own config and tmux integration. These dotfiles only
+*source* what clipfan installs — they carry no clipfan code and no secrets.
 
-## tmux integration (in these dotfiles)
+## tmux integration
 
-`tmux/clipfan.conf` rebinds copy-mode yanks (`y`, `Enter`, mouse-drag) to pipe
-the selection through `clipfan copy`, which injects it into the local clipfan
-daemon and emits OSC 52 to the client tty as a fallback. It is sourced at the
-end of `.tmux.conf` so its bindings win over the earlier copy-mode bindings.
+clipfan's `dist/install.sh` installs its copy snippet to
+`~/.config/clipfan/tmux.conf` and ensures `~/.tmux.conf` sources it. Our
+`.tmux.conf` already has that line:
 
-To pick it up after pulling: `tmux source-file ~/.tmux.conf` (or prefix + `r`).
+    source-file ~/.config/clipfan/tmux.conf
+
+The snippet rebinds copy-mode yanks (`y` / `Enter` / mouse-drag, in both the vi
+and emacs tables) and hooks the tmux paste buffer (`after-set-buffer` /
+`after-load-buffer`) so copies made anywhere in tmux — including full-screen
+TUIs like Claude Code that bypass copy-mode — flow into the clipfan daemon and
+sync to the fleet. The source line is harmless on a host where clipfan isn't
+installed (tmux warns and continues).
+
+To pick it up after install or a pull: `tmux source-file ~/.tmux.conf` (or
+prefix + `r`).
 
 ## The shared key (host-local, never in git)
 
@@ -25,19 +34,17 @@ each host's own config:
 
 This file is host-local state, not a dotfile. It also holds that host's
 `static_peers` list, so it differs per host. Keep `shared_key` identical
-fleet-wide; the peer list varies.
+fleet-wide; the peer list varies. The key never transits this public repo — copy
+it host-to-host over ssh, or keep it in your private store.
 
-### Bringing a new host online
+## Bringing a new host online
 
-1. Install the daemon binary at `~/.local/bin/clipfan` (and on macOS, the
-   `~/.local/bin/clipfan-pasteboard-helper`), plus the supervisor unit
-   (launchd plist on macOS, `systemctl --user` unit on Linux). The clipfan
-   repo's `dist/install.sh` does this.
+1. Run clipfan's `dist/install.sh` (from a built dist tree, or via the menubar
+   app's "Add Peer…"). It installs the daemon at `~/.local/bin/clipfan` (plus
+   the pasteboard helper on macOS / the xclip shim on Linux), registers the
+   launchd/systemd unit, installs the tmux snippet, and wires `~/.tmux.conf`.
 2. Copy the **same `shared_key`** from an existing host into the new host's
-   `~/.config/clipfan/config.json`, and add the new host to each host's
+   `~/.config/clipfan/config.json`, and add the new host to the others'
    `static_peers` (or rely on tailscale discovery).
-3. Symlink `~/.tmux.conf -> ~/git/dotfiles/.tmux.conf` so the clipfan copy
-   bindings come along, then reload tmux.
-
-The key never transits this public repo. Copy it host-to-host over ssh, or
-keep it in your private store.
+3. Make sure `~/.tmux.conf` is in place (symlinked to this repo, or your own),
+   then reload tmux.
