@@ -1,5 +1,8 @@
-# secret.sh — `secret <name>` prints a secret value, dispatching to whichever
-# password-manager CLI is available and authenticated on this machine.
+# secret.sh — `secret <name>` prints a secret value, dispatching to the first
+# usable password-manager CLI: 1Password (`op`) if it's installed AND signed in,
+# otherwise Bitwarden via `rbw`, otherwise `bw`. `rbw`/`bw` are selected on
+# presence alone — `rbw get` unlocks on demand, so a locked vault is fine; `bw`
+# expects BW_SESSION to be set.
 # Sourced into the interactive shell (zsh). Works in zsh and POSIX sh.
 secret() {
   _name=$1
