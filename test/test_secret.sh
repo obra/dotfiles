@@ -27,4 +27,15 @@ out=$(PATH="$TMP/bin:/usr/bin:/bin" sh -c ". \"$REPO/lib/secret.sh\"; secret git
 assert_eq "rbw-value-for-github-token" "$out" "falls back to rbw when op absent"
 rm -rf "$TMP"
 
+# Case 3: op present but NOT signed in -> falls through to rbw
+TMP=$(mktempd)
+make_stub "$TMP/bin" op 'case "$1" in
+  account) exit 1 ;;            # op account list -> not signed in
+  *) exit 1 ;;
+esac'
+make_stub "$TMP/bin" rbw 'echo "rbw-value-for-$2"'
+out=$(PATH="$TMP/bin:/usr/bin:/bin" sh -c ". \"$REPO/lib/secret.sh\"; secret github-token")
+assert_eq "rbw-value-for-github-token" "$out" "falls through to rbw when op not signed in"
+rm -rf "$TMP"
+
 printf 'RESULT run=%s failed=%s\n' "$TESTS_RUN" "$TESTS_FAILED"
