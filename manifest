@@ -16,3 +16,5 @@ bin/idb
 .config/sprout/settings.json
 .config/git/ignore
 .config/zellij/config.kdl
+.p10k.zsh
+.p10k-8color.zsh
