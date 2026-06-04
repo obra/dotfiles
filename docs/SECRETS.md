@@ -1,88 +1,73 @@
 # Secret management
 
-Secrets never live in these repos — not even encrypted. Tracked config reaches secrets
-indirectly through the `secret` helper, which reads them from a password manager at runtime.
+Secrets never live in these repos — not even encrypted. They live in a password manager and are
+loaded **lazily, only when the tool that needs them runs**, via [fnox](https://fnox.jdx.dev). A bare
+shell — including a remote SSH login — never touches a manager.
 
 ## Model
 
-| Where | What | How it's reached |
-|---|---|---|
-| 1Password (`op`) | work secrets | `secret <name>` → finds item by title |
-| Bitwarden (`bw`/`rbw`) | personal secrets | `secret <name>` → falls through to Bitwarden |
-| the repos | **nothing secret** | — |
-
-`lib/secret.sh` defines `secret <name>`. It looks the secret up **by item title**, trying
-1Password first (any vault you can read), then Bitwarden. So a work secret in 1Password and a
-personal secret in Bitwarden both resolve through the same `secret foo` call, and no vault is ever
-hardcoded in config.
+| Layer | What |
+|---|---|
+| **Storage** | 1Password (`op`) for work, Bitwarden (`rbw` agent) for personal |
+| **Mapping** | `~/.config/fnox/config.toml` maps `ENV_VAR → provider + item name` (no values) |
+| **Loading** | `fnox exec -- <cmd>` runs a command with its secrets in the environment |
+| **Ad-hoc** | `secret <name>` (`lib/secret.sh`) for a quick one-off lookup |
 
 ## Storage convention
 
-Store each secret as an item **titled exactly `<name>`** with the value in the item's **password
-field** (a Login or Password item works; the password field is symmetric across both managers).
-Use kebab-case names that read well in config, e.g. `fossa-api-key`, `tailscale-api-key`.
+Store each secret as an item **titled `<name>`** with the value in the **password field** (symmetric
+across both managers). Kebab-case, e.g. `fossa-api-key`. Work → 1Password; personal → Bitwarden.
 
-- **Work** → 1Password (put it in your work vault; the helper finds it by title regardless).
-- **Personal** → Bitwarden.
+Create the item (one-time, interactive-ish):
+- **Bitwarden (`rbw`)** — `rbw add`'s editor hangs when scripted; pipe to stdin instead:
+  ```sh
+  printf '%s\n' "$THE_VALUE" | rbw add <name>
+  ```
+- **1Password (`op`)** — `op item create --category login --title <name> --vault <work-vault> "password=$THE_VALUE"`
 
-## Adding a secret
+Read the value from its existing file rather than typing it into shell history.
 
-1. Create the item in the right manager, titled `<name>`, value in the password field:
-   - **Bitwarden (`rbw`)** — `rbw add` opens an editor and **hangs when scripted**; pipe the value
-     to stdin instead (first line becomes the password):
-     ```sh
-     printf '%s\n' "$THE_VALUE" | rbw add <name>
-     ```
-   - **1Password (`op`)** — scriptable directly:
-     ```sh
-     op item create --category login --title <name> --vault <your-work-vault> "password=$THE_VALUE"
-     ```
-   Avoid putting the literal value in your shell history — read it from the existing file, e.g.
-   `THE_VALUE=$(sed -n 's/^export FOO=//p' ~/.somerc)`.
-2. Reference it from config via `secret <name>` (never paste the value).
-3. Remove any plaintext copy once the reference works.
+## Mapping a secret in fnox
 
-Verify a name resolves (prints the value — only do this where that's safe):
-```sh
-[ -n "$(secret <name>)" ] && echo "resolves" || echo "not found"
+`~/.config/fnox/config.toml` (global; found from any directory):
+```toml
+[providers]
+bitwarden = { type = "bitwarden", backend = "rbw" }   # rbw = agent-based, no BW_SESSION
+onepassword = { type = "1password" }
+
+[secrets]
+FOSSA_API_KEY = { provider = "bitwarden", value = "fossa-api-key" }
+SOME_WORK_KEY = { provider = "onepassword", value = "some-work-item" }
 ```
+Items are referenced **by name** (password field by default; `value = "Item/username"` for other fields).
 
-## Two usage patterns
+## Loading pattern (lazy — the important part)
 
-**Environment-variable secrets** — keep them out of tracked shell config:
+Wrap each tool so its secret loads only when you invoke it:
 ```sh
-# in shell rc (tracked) — no value here, just the reference:
-export FOSSA_API_KEY="$(secret fossa-api-key)"
+# in ~/.zshrc
+fossa() { fnox exec -- fossa "$@"; }
 ```
-For many secrets, prefer **session materialization** over a `secret` call per shell start (which
-re-hits the manager and can prompt repeatedly): fetch them once per login into a gitignored file
-and source it.
-```sh
-# build ~/.cache/secrets.env once per session, then source it:
-{ printf 'export FOSSA_API_KEY=%s\n' "$(secret fossa-api-key)"
-  printf 'export OPENROUTER_API_KEY=%s\n' "$(secret openrouter-api-key)"
-} > ~/.cache/secrets.env
-[ -f ~/.cache/secrets.env ] && . ~/.cache/secrets.env
-```
-The list of `VAR=name` pairs can be tracked (it carries no values); the rendered
-`~/.cache/secrets.env` is gitignored and never committed.
+`fnox exec` injects the env var for the lifetime of that process only. Nothing is fetched at shell
+start, on `cd`, or on a remote login. For ad-hoc one-offs, `secret <name>` still works.
 
-**Config-file secrets** — a tool that reads a credential from its own config file (e.g. a CLI that
-reads `~/.its-rc`): track a template with a placeholder and render the real file on demand:
-```sh
-# templated config (tracked): api-key: __SECRET__
-sed "s|__SECRET__|$(secret the-api-key)|" ~/.its-rc.tmpl > ~/.its-rc
-```
+*(Per-directory project secrets are also possible — drop a `fnox.toml` in the project and
+`eval "$(fnox activate zsh)"` — but prefer per-command wrappers for global CLI tokens so bare/remote
+shells stay clean.)*
+
+## Adding a new secret — checklist
+1. Store the item in the right manager (commands above), titled `<name>`, value in password field.
+2. Add a line under `[secrets]` in `~/.config/fnox/config.toml`.
+3. Wrap the consuming tool with `fnox exec` (or run it that way ad-hoc).
+4. Remove any plaintext copy.
 
 ## Bootstrap on a new machine
-
-1. Install a manager CLI: `brew install 1password-cli` (work boxes) and/or `brew install bitwarden-cli` (personal).
-2. Sign in:
-   - 1Password: enable the CLI in the 1Password app (Settings → Developer → "Integrate with 1Password CLI"), or `op signin`.
-   - Bitwarden: `bw login`, then `bw unlock` (exports `BW_SESSION`). *(Optional: `rbw` gives agent-based unlock-on-demand and is auto-preferred by the helper if present.)*
-3. Run the dotfiles `install.sh` so `lib/secret.sh` is sourced by your shell.
+1. `brew install 1password-cli bitwarden-cli rbw pinentry-mac` (or `mise use -g ubi:jdx/fnox` for fnox).
+2. 1Password: enable CLI integration in the app (or `op signin`). Bitwarden: `rbw register` (personal
+   API key — bot-detection), `rbw unlock`, `rbw sync`. Set `rbw config set pinentry pinentry-mac`.
+3. Run the dotfiles `install.sh`; `~/.config/fnox/config.toml` and `lib/secret.sh` come with it.
 
 ## What never enters the repos
-- Secret values, in any form (plaintext or encrypted).
-- Rendered secret files (`~/.cache/secrets.env`, materialized config) — gitignore them.
-- Manager session tokens (`BW_SESSION`, `op` daemon sockets).
+- Secret values, in any form.
+- Manager session tokens (`BW_SESSION`), agent sockets.
+- Only **references** (item names) live in `fnox.toml` — keep that file in the **private** repo.

@@ -1,2 +1,5 @@
 [settings]
 idiomatic_version_file_enable_tools = ["node"]
+
+[tools]
+"ubi:jdx/fnox" = "latest"
