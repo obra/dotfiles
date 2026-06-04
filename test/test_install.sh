@@ -34,4 +34,17 @@ assert_eq "yes" "$m" "maconly.conf included on macOS"
 assert_eq "no"  "$l" "linonly.conf excluded on macOS"
 rm -rf "$TMP"
 
+# --- real link creation, parent dir stays real ---
+TMP=$(mktempd)
+mkdir -p "$TMP/repo/sub" "$TMP/home"
+echo hello > "$TMP/repo/sub/nested.conf"
+cp "$REPO/install.sh" "$TMP/repo/install.sh"
+printf 'sub/nested.conf\n' > "$TMP/repo/manifest"
+UNAME_OVERRIDE=Darwin HOME="$TMP/home" sh "$TMP/repo/install.sh" >/dev/null
+assert_symlink_to "$TMP/home/sub/nested.conf" "$TMP/repo/sub/nested.conf" "nested file linked"
+# parent must be a real dir, not a symlink
+if [ -d "$TMP/home/sub" ] && [ ! -L "$TMP/home/sub" ]; then p=real; else p=notreal; fi
+assert_eq "real" "$p" "parent dir ~/sub is a real directory"
+rm -rf "$TMP"
+
 printf 'RESULT run=%s failed=%s\n' "$TESTS_RUN" "$TESTS_FAILED"
