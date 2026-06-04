@@ -2,6 +2,7 @@
 # install.sh — deploy dotfiles from this repo into $HOME per the manifest.
 set -eu
 
+# shellcheck disable=SC1007  # CDPATH= is intentional: suppress cd output by clearing CDPATH as env var
 REPO_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
 
 os_name() {
