@@ -27,13 +27,24 @@ Use kebab-case names that read well in config, e.g. `fossa-api-key`, `tailscale-
 
 ## Adding a secret
 
-1. Create the item in the right manager: title = `<name>`, value in the password field.
+1. Create the item in the right manager, titled `<name>`, value in the password field:
+   - **Bitwarden (`rbw`)** — `rbw add` opens an editor and **hangs when scripted**; pipe the value
+     to stdin instead (first line becomes the password):
+     ```sh
+     printf '%s\n' "$THE_VALUE" | rbw add <name>
+     ```
+   - **1Password (`op`)** — scriptable directly:
+     ```sh
+     op item create --category login --title <name> --vault <your-work-vault> "password=$THE_VALUE"
+     ```
+   Avoid putting the literal value in your shell history — read it from the existing file, e.g.
+   `THE_VALUE=$(sed -n 's/^export FOO=//p' ~/.somerc)`.
 2. Reference it from config via `secret <name>` (never paste the value).
 3. Remove any plaintext copy once the reference works.
 
-Verify a name resolves:
+Verify a name resolves (prints the value — only do this where that's safe):
 ```sh
-secret fossa-api-key   # prints the value if found, errors if not
+[ -n "$(secret <name>)" ] && echo "resolves" || echo "not found"
 ```
 
 ## Two usage patterns
