@@ -15,3 +15,4 @@ bin/idb
 .config/cage/config.json
 .config/sprout/settings.json
 .config/git/ignore
+.config/zellij/config.kdl
