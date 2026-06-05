@@ -8,66 +8,82 @@ shell — including a remote SSH login — never touches a manager.
 
 | Layer | What |
 |---|---|
-| **Storage** | 1Password (`op`) for work, Bitwarden (`rbw` agent) for personal |
+| **Storage** | 1Password (`op`) for work, Bitwarden (`bw`) for personal |
+| **Unlock** | 1Password's biometric is the only gate. Bitwarden unlocks *silently* from it — its master password is stored in 1Password and pulled by `bw-unlock` |
 | **Mapping** | `~/.config/fnox/config.toml` maps `ENV_VAR → provider + item name` (no values) |
-| **Loading** | `fnox exec -- <cmd>` runs a command with its secrets in the environment |
+| **Loading** | a tool wrapper sets `BW_SESSION` (via `bw-unlock`) then runs `fnox exec -- <cmd>` |
 | **Ad-hoc** | `secret <name>` (`lib/secret.sh`) for a quick one-off lookup |
 
 ## Storage convention
 
-Store each secret as an item **titled `<name>`** with the value in the **password field** (symmetric
-across both managers). Kebab-case, e.g. `fossa-api-key`. Work → 1Password; personal → Bitwarden.
+Store each secret as an item **titled `<name>`** with the value in the **password field**. Kebab-case,
+e.g. `fossa-api-key`. Work → 1Password; personal → Bitwarden.
 
-Create the item (one-time, interactive-ish):
-- **Bitwarden (`rbw`)** — `rbw add`'s editor hangs when scripted; pipe to stdin instead:
+Create the item (one-time):
+- **1Password (`op`)** — fully scriptable:
   ```sh
-  printf '%s\n' "$THE_VALUE" | rbw add <name>
+  op item create --category login --title <name> --vault <work-vault> "password=$THE_VALUE"
   ```
-- **1Password (`op`)** — `op item create --category login --title <name> --vault <work-vault> "password=$THE_VALUE"`
+- **Bitwarden (`bw`)** — needs a session (`bw-unlock` gives one); `bw create` reads JSON from stdin:
+  ```sh
+  S=$(bw-unlock)
+  bw get template item --session "$S" \
+    | jq --arg n <name> --arg p "$THE_VALUE" '.type=1|.name=$n|.login={password:$p}' \
+    | bw encode | bw create item --session "$S"
+  ```
+  (Avoid `rbw add` — its editor flow hangs when scripted.)
 
 Read the value from its existing file rather than typing it into shell history.
 
 ## Mapping a secret in fnox
 
-`~/.config/fnox/config.toml` (global; found from any directory):
+`~/.config/fnox/config.toml` (global; found from any directory; lives in the **private** repo):
 ```toml
 [providers]
-bitwarden = { type = "bitwarden", backend = "rbw" }   # rbw = agent-based, no BW_SESSION
+bitwarden   = { type = "bitwarden", backend = "bw" }   # uses BW_SESSION from the environment
 onepassword = { type = "1password" }
 
 [secrets]
 FOSSA_API_KEY = { provider = "bitwarden", value = "fossa-api-key" }
 SOME_WORK_KEY = { provider = "onepassword", value = "some-work-item" }
 ```
-Items are referenced **by name** (password field by default; `value = "Item/username"` for other fields).
+Items are referenced **by name** (password field by default).
+
+## Silent Bitwarden unlock
+
+`bw-unlock` (in the private repo's `bin/`, on `PATH`) prints a `BW_SESSION` by reading the Bitwarden
+master password from 1Password — so `op`'s biometric is the only prompt you ever see:
+```sh
+BW_PW="$(op read 'op://<vault>/bitwarden-cli/password')" bw unlock --passwordenv BW_PW --raw
+```
 
 ## Loading pattern (lazy — the important part)
 
-Wrap each tool so its secret loads only when you invoke it:
+In `~/.zshrc`, a helper sets `BW_SESSION` on first use, and each tool is wrapped:
 ```sh
-# in ~/.zshrc
-fossa() { fnox exec -- fossa "$@"; }
+_bw_session() { [ -n "${BW_SESSION:-}" ] || export BW_SESSION="$(bw-unlock 2>/dev/null)"; }
+withsecrets() { _bw_session; fnox exec -- "$@"; }      # run any tool with its secrets
+fossa()       { _bw_session; fnox exec -- fossa "$@"; }
+sentry-cli()  { _bw_session; fnox exec -- sentry-cli "$@"; }
 ```
-`fnox exec` injects the env var for the lifetime of that process only. Nothing is fetched at shell
-start, on `cd`, or on a remote login. For ad-hoc one-offs, `secret <name>` still works.
-
-*(Per-directory project secrets are also possible — drop a `fnox.toml` in the project and
-`eval "$(fnox activate zsh)"` — but prefer per-command wrappers for global CLI tokens so bare/remote
-shells stay clean.)*
+`fnox exec` injects the env vars for that process only. Nothing is fetched at shell start, on `cd`, or
+on a remote login — `_bw_session` runs only inside a wrapper, and degrades gracefully (empty session)
+where `op`/`bw` aren't present. For a one-off: `withsecrets <tool>`. For ad-hoc values: `secret <name>`.
 
 ## Adding a new secret — checklist
 1. Store the item in the right manager (commands above), titled `<name>`, value in password field.
 2. Add a line under `[secrets]` in `~/.config/fnox/config.toml`.
-3. Wrap the consuming tool with `fnox exec` (or run it that way ad-hoc).
-4. Remove any plaintext copy.
+3. Wrap the consuming tool (or run it via `withsecrets <tool>`).
+4. Quarantine/remove any plaintext copy.
 
 ## Bootstrap on a new machine
-1. `brew install 1password-cli bitwarden-cli rbw pinentry-mac` (or `mise use -g ubi:jdx/fnox` for fnox).
-2. 1Password: enable CLI integration in the app (or `op signin`). Bitwarden: `rbw register` (personal
-   API key — bot-detection), `rbw unlock`, `rbw sync`. Set `rbw config set pinentry pinentry-mac`.
-3. Run the dotfiles `install.sh`; `~/.config/fnox/config.toml` and `lib/secret.sh` come with it.
+1. `brew install 1password-cli bitwarden-cli jq` and `mise use -g ubi:jdx/fnox`.
+2. 1Password: enable CLI integration in the app (Settings → Developer). It holds a `bitwarden-cli` item
+   with the Bitwarden **master password** + API key (`client_id`/`client_secret`).
+3. Bitwarden: `BW_CLIENTID=$(op read …/client_id) BW_CLIENTSECRET=$(op read …/client_secret) bw login --apikey`.
+4. Run the dotfiles `install.sh`; `~/.config/fnox/config.toml`, `bin/bw-unlock`, and `lib/secret.sh` come with it.
 
 ## What never enters the repos
 - Secret values, in any form.
 - Manager session tokens (`BW_SESSION`), agent sockets.
-- Only **references** (item names) live in `fnox.toml` — keep that file in the **private** repo.
+- Only **references** (item names, the `op://…` path in `bw-unlock`) live in config — in the **private** repo.
