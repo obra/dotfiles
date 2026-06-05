@@ -16,12 +16,11 @@ bin/idb
 .config/sprout/settings.json
 .config/git/ignore
 .config/zellij/config.kdl
-.p10k.zsh
-.p10k-8color.zsh
 .coderabbit-extractor
 .zshenv
 .bash_profile
 .config/zsh/.zshrc
+.config/zsh/.p10k.zsh                       # z4h prompt config (ZDOTDIR path; z4h auto-loads this)
 .config/zsh/macos.zsh        macos
 .config/zsh/.zprofile
 .config/zsh/linux.zsh        linux
