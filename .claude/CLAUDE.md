@@ -67,6 +67,12 @@ Anytime you're performing an action that you are likely going to need to repeat 
 - YOU MUST NOT manually change whitespace that does not affect execution or output. Otherwise, use a formatting tool.
 - Fix broken things immediately when you find them. Don't ask permission to fix bugs.
 
+## Parallel agents and file-state races
+
+- DO NOT dispatch parallel background agents whose commits will run lint/build/test across the same file or package you're still editing in the foreground. Even if their target files don't overlap yours, the pre-commit gate is a shared resource — when the gate fails because of your WIP, the agent's workaround is often to `git checkout` your file, silently destroying your edits. Finish your foreground batch and commit before dispatching parallel workers, OR use isolated git worktrees (see `superpowers:using-git-worktrees`) so each agent has its own tree.
+- When the `Edit` tool warns "file modified since last read," treat that as a strong signal that another process clobbered some of your earlier edits. Re-read the file END TO END — not just the local neighborhood of your next edit. Internally consistent partial-reverts (old signatures matching old callers) will pass `go build` and `go test` without alerting you.
+- Before committing a batch of claimed fixes, grep-verify each claim against the file as it is NOW. If the commit message says "added parameter X to function Y," run `grep "func Y" file` and confirm X appears. Build + test passing is NOT proof that all your intended changes landed. This check costs ~30 seconds per fix and prevents the "commit message lies" class of bugs that both users and adversarial reviewers will catch.
+
 
 
 ## Naming and Comments
