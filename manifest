@@ -24,3 +24,4 @@ bin/idb
 .zshrc.macos        macos
 .zprofile
 .bash_profile
+bin/debug-mcp-wrapper.sh
