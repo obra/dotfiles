@@ -61,6 +61,10 @@ path=(~/bin $path)
 # Export environment variables.
 export GPG_TTY=$TTY
 
+# Headless machines (no 1Password app): a service-account token in ~/.config/op/env lets
+# op run unattended. Absent on app-integration machines (e.g. a primary Mac) = harmless no-op.
+[ -r "$HOME/.config/op/env" ] && . "$HOME/.config/op/env"
+
 # Ad-hoc secret lookups: `secret <name>` reads from 1Password/Bitwarden.
 [ -r ~/git/dotfiles/lib/secret.sh ] && . ~/git/dotfiles/lib/secret.sh
 

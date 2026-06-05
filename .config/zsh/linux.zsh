@@ -7,7 +7,5 @@
 # Start an ssh-agent only if one isn't already provided
 [ -z "${SSH_AUTH_SOCK:-}" ] && command -v ssh-agent >/dev/null && eval "$(ssh-agent -s)" >/dev/null 2>&1
 
-# Headless 1Password: no desktop app here, so op needs a service-account token.
-# Put `export OP_SERVICE_ACCOUNT_TOKEN=ops_...` in ~/.config/op/env (chmod 600, never tracked).
-# That lets op read items non-interactively, which in turn drives bw-unlock + fnox.
-[ -r "$HOME/.config/op/env" ] && . "$HOME/.config/op/env"
+# (Service-account token sourcing for headless machines moved to the common .zshrc —
+# it's capability-based, not Linux-specific.)
