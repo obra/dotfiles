@@ -17,7 +17,9 @@ say()  { [ "$QUIET" = 1 ] || printf '%s\n' "$1"; }
 flag() { printf '  ✗ %s\n' "$1"; findings=$((findings + 1)); }
 ok()   { [ "$QUIET" = 1 ] || printf '  ✓ %s\n' "$1"; }
 
-os_perm() { stat -f '%A' "$1" 2>/dev/null || stat -c '%a' "$1" 2>/dev/null; }
+# perms as octal: Linux `stat -c`, macOS `stat -f`. Try -c first — on macOS it errors out
+# (so we fall through), whereas Linux `stat -f` succeeds with *filesystem* info, not perms.
+os_perm() { stat -c '%a' "$1" 2>/dev/null || stat -f '%A' "$1" 2>/dev/null; }
 cur_os()  { case "$(uname -s)" in Darwin) echo macos;; Linux) echo linux;; *) echo other;; esac; }
 
 say "== dotfiles audit =="
