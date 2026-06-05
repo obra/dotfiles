@@ -114,9 +114,9 @@ setopt no_auto_menu  # require an extra TAB press to open the completion menu
 command -v mise >/dev/null && eval "$(mise activate zsh)"
 
 # OS-specific shell config (deployed per-OS via dotfiles; absent elsewhere = no-op).
-[ -r ~/.zshrc.macos ] && source ~/.zshrc.macos
+[ -r "${ZDOTDIR}/macos.zsh" ] && source "${ZDOTDIR}/macos.zsh"
 # Private/work fragments (from the private dotfiles repo).
-[ -r ~/.zshrc.private ] && source ~/.zshrc.private
+[ -r "${ZDOTDIR}/private.zsh" ] && source "${ZDOTDIR}/private.zsh"
 
 # LM Studio CLI
 [ -d "$HOME/.cache/lm-studio/bin" ] && export PATH="$PATH:$HOME/.cache/lm-studio/bin"
