@@ -83,6 +83,35 @@ where `op`/`bw` aren't present. For a one-off: `withsecrets <tool>`. For ad-hoc 
 3. Bitwarden: `BW_CLIENTID=$(op read …/client_id) BW_CLIENTSECRET=$(op read …/client_secret) bw login --apikey`.
 4. Run the dotfiles `install.sh`; `~/.config/fnox/config.toml`, `bin/bw-unlock`, and `lib/secret.sh` come with it.
 
+## Headless / unattended machines (no 1Password app)
+
+A server has no desktop app, so `op`'s normal biometric integration is unavailable — and 1Password
+**service accounts cannot read your personal/Employee vault** by design. The fix is to root the box in
+a **service-account token**, the same "one local root credential, everything else fetched at runtime"
+model a CI runner uses:
+
+1. **Put the work secrets in a service-account-reachable vault.** Create a vault (e.g. `automation`)
+   shared with only you, and move the items the box needs there:
+   ```sh
+   op vault create automation
+   op item move bitwarden-cli   --current-vault Employee --destination-vault automation
+   op item move tailscale-api-key --current-vault Employee --destination-vault automation
+   ```
+   Repoint the `op://Employee/…` references in `config.toml` + `bin/bw-unlock` to `op://automation/…`
+   (still resolves on your Mac — the app sees every vault).
+2. **Mint a read-only service account** scoped to that vault, and save the token (it prints once):
+   ```sh
+   op service-account create <box-name> --vault automation:read_items --raw
+   ```
+   Back it up as a 1Password item too, so it's recoverable.
+3. **Drop the token on the box** in a local file the shell sources — never tracked, `chmod 600`:
+   ```sh
+   printf 'export OP_SERVICE_ACCOUNT_TOKEN=%s\n' "$TOKEN" > ~/.config/op/env   # 600
+   ```
+   `linux.zsh` sources `~/.config/op/env`, so `op` runs unattended → `bw login --apikey` + `bw-unlock`
+   + `fnox` all work with no prompt. Personal (Bitwarden) secrets ride along, since the bw master
+   password lives in the `automation` vault too.
+
 ## What never enters the repos
 - Secret values, in any form.
 - Manager session tokens (`BW_SESSION`), agent sockets.
