@@ -22,3 +22,5 @@ bin/idb
 .zshenv
 .zshrc
 .zshrc.macos        macos
+.zprofile
+.bash_profile
