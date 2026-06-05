@@ -19,3 +19,6 @@ bin/idb
 .p10k.zsh
 .p10k-8color.zsh
 .coderabbit-extractor
+.zshenv
+.zshrc
+.zshrc.macos        macos
