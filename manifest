@@ -21,7 +21,6 @@ bin/idb
 .coderabbit-extractor
 .zshenv
 .bash_profile
-bin/debug-mcp-wrapper.sh
 .config/zsh/.zshrc
 .config/zsh/macos.zsh        macos
 .config/zsh/.zprofile

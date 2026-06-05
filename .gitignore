@@ -11,3 +11,28 @@ vscode/extensions
 .claude/projects/
 .claude/todos/
 .claude/statsig/
+
+# --- secret/credential safety (defense-in-depth) ---
+.env
+.env.*
+*.token
+.netrc
+.secrets
+*.pem
+*.key
+*.p12
+id_rsa
+id_ed25519
+id_ecdsa
+# private shell fragments (sourced at runtime; never tracked in the PUBLIC repo)
+.zshrc.private
+private.zsh
+.env.zsh
+# fnox secret mapping lives in the PRIVATE repo only
+.config/fnox/
+fnox.toml
+# machine-specific / tool-leaked artifacts (kept local, never published)
+vscode/argv.json
+.claude/skills
+bin/debug-mcp-wrapper.sh
+*.log
