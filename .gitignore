@@ -33,6 +33,5 @@ private.zsh
 fnox.toml
 # machine-specific / tool-leaked artifacts (kept local, never published)
 vscode/argv.json
-.claude/skills
 bin/debug-mcp-wrapper.sh
 *.log

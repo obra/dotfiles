@@ -24,3 +24,18 @@ bin/idb
 .config/zsh/macos.zsh        macos
 .config/zsh/.zprofile
 .config/zsh/linux.zsh        linux
+
+# Claude config — CLAUDE.md, commands, and skills. Skills are listed individually so that
+# host-specific project-linked skills under ~/.claude/skills are left untouched.
+.claude/CLAUDE.md
+.claude/commands/par.md
+.claude/skills/mcp-cli
+.claude/skills/roborev-design-review
+.claude/skills/roborev-design-review-branch
+.claude/skills/roborev-fix
+.claude/skills/roborev-refine
+.claude/skills/roborev-respond
+.claude/skills/roborev-review
+.claude/skills/roborev-review-branch
+.claude/skills/syncing-obsidian
+.claude/skills/windows-vm
