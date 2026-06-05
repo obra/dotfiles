@@ -69,11 +69,7 @@ export GPG_TTY=$TTY
 # so a bare shell — including remote SSH — never touches a password manager.
 _bw_session() { [ -n "${BW_SESSION:-}" ] || export BW_SESSION="$(bw-unlock 2>/dev/null)"; }
 withsecrets() { _bw_session; fnox exec -- "$@"; }          # ad-hoc: run any tool with all secrets
-# Each wrapper fetches only its own secret (Bitwarden needs _bw_session; 1Password doesn't):
-fossa()       { _bw_session; FOSSA_API_KEY="$(fnox get FOSSA_API_KEY)" command fossa "$@"; }
-sentry-cli()  { _bw_session; SENTRY_AUTH_TOKEN="$(fnox get SENTRY_AUTH_TOKEN)" command sentry-cli "$@"; }
-tscli()       { command tscli --api-key "$(fnox get TSCLI_API_KEY)" "$@"; }   # 1Password
-gws()         { local c; c="$(mktemp)"; fnox get GWS_CREDENTIALS_JSON > "$c" 2>/dev/null; command gws --credentials "$c" "$@"; rm -f "$c"; }
+# Tool-specific secret wrappers live in the private repo (~/.config/zsh/private.zsh).
 
 # Source additional local files if they exist.
 z4h source ~/.env.zsh
@@ -148,11 +144,7 @@ export PATH="$HOME/.claude/local/:$HOME/go/bin:$PATH"
 [ -d "$HOME/.rbenv/bin" ] && export PATH="$HOME/.rbenv/bin:$PATH"
 command -v rbenv >/dev/null && eval "$(rbenv init - --no-rehash zsh)"
 
-# Antigravity
-[ -d "$HOME/.antigravity/antigravity/bin" ] && export PATH="$HOME/.antigravity/antigravity/bin:$PATH"
+# (machine/work-specific tool integrations live in the private repo's private.zsh)
 
-# LLM Proxy
-command -v llm-proxy >/dev/null && eval "$(llm-proxy --env)"
-
-# Antigravity CLI installer
+# Generic local bin
 [ -d "$HOME/.local/bin" ] && export PATH="$HOME/.local/bin:$PATH"

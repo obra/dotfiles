@@ -17,7 +17,7 @@ shell — including a remote SSH login — never touches a manager.
 ## Storage convention
 
 Store each secret as an item **titled `<name>`** with the value in the **password field**. Kebab-case,
-e.g. `fossa-api-key`. Work → 1Password; personal → Bitwarden.
+e.g. `some-api-key`. Work → 1Password; personal → Bitwarden.
 
 Create the item (one-time):
 - **1Password (`op`)** — fully scriptable:
@@ -44,7 +44,7 @@ bitwarden   = { type = "bitwarden", backend = "bw" }   # uses BW_SESSION from th
 onepassword = { type = "1password" }
 
 [secrets]
-FOSSA_API_KEY = { provider = "bitwarden", value = "fossa-api-key" }
+MY_API_KEY = { provider = "bitwarden", value = "my-api-key" }
 SOME_WORK_KEY = { provider = "onepassword", value = "some-work-item" }
 ```
 Items are referenced **by name** (password field by default).
@@ -63,8 +63,8 @@ In `~/.zshrc`, a helper sets `BW_SESSION` on first use, and each tool is wrapped
 ```sh
 _bw_session() { [ -n "${BW_SESSION:-}" ] || export BW_SESSION="$(bw-unlock 2>/dev/null)"; }
 withsecrets() { _bw_session; fnox exec -- "$@"; }      # run any tool with its secrets
-fossa()       { _bw_session; fnox exec -- fossa "$@"; }
-sentry-cli()  { _bw_session; fnox exec -- sentry-cli "$@"; }
+mytool()      { _bw_session; fnox exec -- mytool "$@"; }
+othertool()   { fnox exec -- othertool "$@"; }
 ```
 `fnox exec` injects the env vars for that process only. Nothing is fetched at shell start, on `cd`, or
 on a remote login — `_bw_session` runs only inside a wrapper, and degrades gracefully (empty session)

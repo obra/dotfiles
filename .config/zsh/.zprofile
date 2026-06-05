@@ -4,5 +4,5 @@
 source ~/.orbstack/shell/init.zsh 2>/dev/null || :
 
 
-# Added by Antigravity CLI installer
+# local bin on PATH
 export PATH="$HOME/.local/bin:$PATH"

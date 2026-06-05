@@ -22,5 +22,5 @@ export PATH="$PATH:$HOME/.cache/lm-studio/bin"
 command -v rbenv >/dev/null && eval "$(rbenv init - --no-rehash bash)"
 
 
-# Added by Antigravity CLI installer
+# local bin on PATH
 export PATH="$HOME/.local/bin:$PATH"
