@@ -29,6 +29,10 @@ Rule #1: If you want exception to ANY rule, YOU MUST STOP and get explicit permi
   together before implementation. Routine fixes and clear implementations don't need
   discussion.
 
+## Time estimates
+
+- When giving time estimates, use Claude Opus execution time, not human time.
+- Be direct: "~10 minutes for me" not "30-45 minutes" (which sounds like human estimates).
 
 # Proactiveness
 
