@@ -111,6 +111,7 @@ command -v mise >/dev/null && eval "$(mise activate zsh)"
 
 # OS-specific shell config (deployed per-OS via dotfiles; absent elsewhere = no-op).
 [ -r "${ZDOTDIR}/macos.zsh" ] && source "${ZDOTDIR}/macos.zsh"
+[ -r "${ZDOTDIR}/linux.zsh" ] && source "${ZDOTDIR}/linux.zsh"
 # Private/work fragments (from the private dotfiles repo).
 [ -r "${ZDOTDIR}/private.zsh" ] && source "${ZDOTDIR}/private.zsh"
 

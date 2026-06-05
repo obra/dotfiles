@@ -24,3 +24,4 @@ bin/idb
 .config/zsh/.zshrc
 .config/zsh/macos.zsh        macos
 .config/zsh/.zprofile
+.config/zsh/linux.zsh        linux
