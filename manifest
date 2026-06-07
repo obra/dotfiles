@@ -48,6 +48,13 @@ bin/idb
 .claude/skills/syncing-obsidian
 .claude/skills/windows-vm
 
+# Codex config — generic agent rules and skills. The skills dir is merged child-by-child so
+# new skills are picked up without a manifest edit, and host-local / external-symlinked skills
+# in ~/.codex/skills are left untouched. (The private sprout skill is merged in from the private
+# repo; default.rules is NOT tracked — it accretes per-command trust state that leaks history.)
+.codex/AGENTS.md
+merge-children .codex/skills
+
 # Editor / app config files (macOS Application Support paths contain a space — handled by the
 # engine's manifest parser). Editor settings only; app state/caches are left untracked.
 Library/Application Support/Code/User/settings.json                 macos
