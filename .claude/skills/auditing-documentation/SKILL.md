@@ -61,7 +61,9 @@ Auto-fix a claim **only when ALL hold**:
 
 **1 — Verify.** For **evergreen** docs, fan out one subagent per doc (cap the width; budget claims per doc). Each extracts atomic claims, classifies per the rubric, verifies against ground truth, and returns findings **with a `file:line` or command-output citation for every verdict — including "matches"**. No edits. **Point-in-time** docs: handle in the main thread (or one batched agent) — no claim-vs-code checking, only meta-detection (superseded-but-unmarked, missing date, linked-as-live, broken refs).
 
-**2 — Triage & apply (main thread).** Apply the determinate auto-fixes to the working tree. Run a **bounded, prioritized** interview on everything else (evergreen high-confidence-stale first; defer the long tail to the report). Apply approved point-in-time meta-fixes. Stamp the marker on verified evergreen docs. Leave everything **uncommitted** for human review.
+**2 — Triage & apply (main thread).** Apply the determinate auto-fixes to the working tree. Run a **bounded, prioritized** interview on everything else (evergreen high-confidence-stale first; defer the long tail to the report). Apply approved point-in-time meta-fixes.
+
+**3 — Adversarially verify your own edits (main thread).** Before declaring done, **re-check the edits you just applied** — an audit's own fixes are exactly where confident-but-wrong claims hide: an over-claim, a stale code *comment* restated as fact, a removal that dropped a still-live concept, an example that won't validate. Dispatch **two or more competing subagents** that race to find the largest number of legitimate errors in the applied diff, each claim re-verified against ground truth with a `file:line` or command-output citation. Tell them explicitly they are competing and that **padding or inflating findings disqualifies them** — that framing is what keeps the pass honest. Fix every confirmed finding. Only then **stamp the last-reviewed marker** on the verified evergreen docs, and leave everything **uncommitted** for human review.
 
 ## Last-reviewed marker
 
@@ -85,6 +87,7 @@ Date + SHA are **provenance only** (HEAD at review time), not a scoping key. Sta
 - "Close enough, I'll just fix the count." → Counts go to the human.
 - Editing a file that says "generated" / "do not edit". → Skip it.
 - Marking a claim "matches" **without a citation**. → Cite it or don't claim it.
+- About to **finish without a second adversarial pass over your own edits**. → Run the competing verify pass (Phase 3) first; fix what it finds.
 
 ## Rationalizations
 
@@ -106,3 +109,4 @@ Date + SHA are **provenance only** (HEAD at review time), not a scoping key. Sta
 - Spawning one subagent per point-in-time doc — batch them; they aren't claim-verified.
 - An unbounded first-run interview backlog — prioritize, defer the tail to a report.
 - Auto-committing the audit — leave it uncommitted for human review.
+- Declaring done without adversarially verifying your own edits — your fixes are a prime hiding spot for confident-but-wrong claims (Phase 3).
