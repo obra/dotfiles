@@ -65,12 +65,11 @@ export GPG_TTY=$TTY
 # op run unattended. Absent on app-integration machines (e.g. a primary Mac) = harmless no-op.
 [ -r "$HOME/.config/op/env" ] && . "$HOME/.config/op/env"
 
-# Ad-hoc secret lookups: `secret <name>` reads from 1Password/Bitwarden.
-[ -r ~/git/dotfiles/lib/secret.sh ] && . ~/git/dotfiles/lib/secret.sh
-
-# Lazy secret loading via fnox (see ~/git/dotfiles/docs/SECRETS.md). Bitwarden unlocks
-# silently from 1Password via `bw-unlock`; BW_SESSION is set on first wrapped-tool use,
-# so a bare shell — including remote SSH — never touches a password manager.
+# Lazy secret loading via fnox (see ~/git/homedir-manager/share/SECRETS.md). fnox is the
+# single secrets mechanism: every secret is a declared entry in ~/.config/fnox/config.toml,
+# resolved at runtime. Bitwarden unlocks silently from 1Password via `bw-unlock`; BW_SESSION
+# is set on first wrapped-tool use, so a bare shell — including remote SSH — never touches a
+# password manager.
 _bw_session() { [ -n "${BW_SESSION:-}" ] || export BW_SESSION="$(bw-unlock 2>/dev/null)"; }
 withsecrets() { _bw_session; fnox exec -- "$@"; }          # ad-hoc: run any tool with all secrets
 # Tool-specific secret wrappers live in the private repo (~/.config/zsh/private.zsh).

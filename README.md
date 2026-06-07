@@ -14,12 +14,14 @@ Run `homedir-manager install` only on a new machine or after adding a NEW file t
 - `homedir-manager install` — deploy. Idempotent. Pre-existing files are moved to
   `~/.dotfiles-backup/<timestamp>/`, never overwritten.
 - `homedir-manager audit` — scan for leaked secrets, deploy drift, and bad perms.
-- `sh test/run.sh` — run this repo's own tests (covers `lib/secret.sh`).
+- `sh test/run.sh` — run this repo's own tests.
 
 ## Secrets
-Secrets never live in this repo. Shell config calls `secret <name>` (see `lib/secret.sh`), which looks
-the secret up by item title in 1Password (`op`) first, then Bitwarden (`rbw`/`bw`). General setup,
-conventions, and patterns are documented with the engine (`homedir-manager/share/SECRETS.md`).
+Secrets never live in this repo. [fnox](https://fnox.jdx.dev) is the single mechanism: each secret is a
+declared entry in `~/.config/fnox/config.toml` (a reference, not a value) and is resolved at runtime by
+the tool that needs it. Shell config wraps each tool so it runs under `fnox exec`; for a one-off,
+`withsecrets <tool>`. General setup, conventions, and patterns are documented with the engine
+(`homedir-manager/share/SECRETS.md`).
 
 ## Bootstrap a new machine
 1. `git clone https://github.com/obra/dotfiles ~/git/dotfiles`
