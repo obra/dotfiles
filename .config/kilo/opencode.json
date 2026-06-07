@@ -1,0 +1,9 @@
+{
+  "$schema": "https://app.kilo.ai/config.json",
+  "plugin": [
+    "https://github.com/obra/superpowers"
+  ],
+  "permission": {
+    "bash": "allow"
+  }
+}

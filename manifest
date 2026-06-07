@@ -31,9 +31,11 @@ bin/idb
 .config/macos-defaults/watched-domains      macos
 .config/macos-defaults/noise-deny           macos
 
-# Claude config — CLAUDE.md, commands, and skills. Skills are listed individually so that
-# host-specific project-linked skills under ~/.claude/skills are left untouched.
+# Claude config — CLAUDE.md, commands, skills, and the status-line script. Skills are listed
+# individually so that host-specific project-linked skills under ~/.claude/skills are left
+# untouched. (settings.json lives in the private repo — it references the work org.)
 .claude/CLAUDE.md
+.claude/statusline-command.sh
 .claude/commands/par.md
 .claude/skills/mcp-cli
 .claude/skills/roborev-design-review
@@ -54,3 +56,8 @@ Library/Application Support/Cursor/User/keybindings.json            macos
 Library/Application Support/Windsurf/User/settings.json             macos
 Library/Application Support/com.mitchellh.ghostty/config            macos
 .config/opencode/opencode.json
+
+# Other tool configs (portable, non-secret). Each tool's surrounding dir is tool-managed
+# state — only the authored config file is tracked.
+.config/kilo/opencode.json
+.config/packnplay/config.json

@@ -1,0 +1,20 @@
+{
+  "container_runtime": "orbstack",
+  "default_image": "",
+  "default_credentials": {
+    "git": true,
+    "ssh": true,
+    "gh": true,
+    "gpg": false,
+    "npm": false,
+    "aws": false
+  },
+  "default_env_vars": [],
+  "env_configs": {},
+  "default_container": {
+    "image": "",
+    "check_for_updates": true,
+    "auto_pull_updates": true,
+    "check_frequency_hours": 24
+  }
+}
