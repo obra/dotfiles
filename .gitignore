@@ -35,3 +35,6 @@ fnox.toml
 vscode/argv.json
 bin/debug-mcp-wrapper.sh
 *.log
+# scratch trees that tasks have dumped into the repo working dir (never config)
+artifacts/
+node_modules/
