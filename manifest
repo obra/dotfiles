@@ -37,6 +37,7 @@ bin/idb
 .claude/CLAUDE.md
 .claude/statusline-command.sh
 .claude/commands/par.md
+.claude/skills/e2e-scenario-testing
 .claude/skills/mcp-cli
 .claude/skills/roborev-design-review
 .claude/skills/roborev-design-review-branch
