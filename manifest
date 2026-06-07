@@ -4,7 +4,6 @@
 .gitconfig
 .hammerspoon        macos
 bin/coderabbit-extract
-bin/dotfiles-audit
 bin/flatten.js
 bin/git-worktree-llm
 bin/idb
@@ -40,4 +39,3 @@ bin/idb
 .claude/skills/roborev-review-branch
 .claude/skills/syncing-obsidian
 .claude/skills/windows-vm
-.claude/skills/managing-dotfiles
