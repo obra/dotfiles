@@ -45,3 +45,12 @@ bin/idb
 .claude/skills/roborev-review-branch
 .claude/skills/syncing-obsidian
 .claude/skills/windows-vm
+
+# Editor / app config files (macOS Application Support paths contain a space — handled by the
+# engine's manifest parser). Editor settings only; app state/caches are left untracked.
+Library/Application Support/Code/User/settings.json                 macos
+Library/Application Support/Cursor/User/settings.json               macos
+Library/Application Support/Cursor/User/keybindings.json            macos
+Library/Application Support/Windsurf/User/settings.json             macos
+Library/Application Support/com.mitchellh.ghostty/config            macos
+.config/opencode/opencode.json

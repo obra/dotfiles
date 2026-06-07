@@ -1,0 +1,126 @@
+{
+  "arduino.logLevel": "verbose",
+  "workbench.colorTheme": "Light Modern",
+  "platformio-ide.activateOnlyOnPlatformIOProject": true,
+  "editor.inlineSuggest.enabled": true,
+  "workbench.startupEditor": "none",
+  "platformio-ide.activateProjectOnTextEditorChange": true,
+  "platformio-ide.autoPreloadEnvTasks": true,
+  "C_Cpp.clang_format_fallbackStyle": " { BasedOnStyle: LLVM, UseTab: Never, IndentWidth: 4, TabWidth: 4, BreakBeforeBraces: Allman, AllowShortIfStatementsOnASingleLine: false, IndentCaseLabels: false, ColumnLimit: 0, AccessModifierOffset: -4, NamespaceIndentation: All, FixNamespaceComments: false }.",
+  "git.autofetch": true,
+  "prettier.requireConfig": true,
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "files.autoSave": "afterDelay",
+  "javascript.suggest.completeFunctionCalls": true,
+  "vscodeReactRefactor.functionType": "arrowFunction",
+  "editor.formatOnSave": true,
+  "git.enableSmartCommit": true,
+  "editor.minimap.enabled": false,
+  "glean.showConversionWarning": false,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "never"
+  },
+  "javascript.updateImportsOnFileMove.enabled": "always",
+  "github.copilot.enable": {
+    "*": true,
+    "yaml": false,
+    "plaintext": true,
+    "markdown": false
+  },
+  "ruby.languageServer": {},
+  "[ruby]": {
+    "editor.defaultFormatter": "Shopify.ruby-lsp",
+    "editor.formatOnType": true,
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true,
+    "editor.semanticHighlighting.enabled": true,
+    "editor.formatOnSave": true,
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+    "files.trimFinalNewlines": true,
+    "editor.rulers": [
+      120
+    ],
+  },
+  "byesig.fold": false,
+  "byesig.enabled": true,
+  "byesig.opacity": 0.5,
+  "byesig.showIcon": false,
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "editor.rulers": [
+    120
+  ],
+  "rubyLsp.enabledFeatures": {
+    "codeActions": true,
+    "diagnostics": true,
+    "documentHighlights": true,
+    "documentLink": true,
+    "documentSymbols": true,
+    "foldingRanges": true,
+    "formatting": true,
+    "hover": true,
+    "inlayHint": true,
+    "onTypeFormatting": true,
+    "selectionRanges": true,
+    "semanticHighlighting": true
+  },
+  "rubyLsp.rubyVersionManager": "rbenv",
+  "files.associations": {
+    "*.html.erb": "erb"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  },
+  "security.workspace.trust.untrustedFiles": "open",
+  "gitlens.rebaseEditor.ordering": "asc",
+  "[python]": {
+    "editor.formatOnType": true
+  },
+  "workbench.preferredDarkColorTheme": "Light Modern",
+  "window.autoDetectColorScheme": true,
+  "[html]": {
+    "editor.defaultFormatter": "vscode.html-language-features"
+  },
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "workbench.preferredHighContrastColorTheme": "Light Modern",
+  "git.openRepositoryInParentFolders": "always",
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "ruby.codeCompletion": "rcodetools",
+  "ruby.intellisense": "rubyLocate",
+  "ruby.useLanguageServer": false,
+  "ruby.lint": {},
+  "ruby.format": "rubocop",
+  "rdbg.rubyVersionManager": "rbenv",
+  "editor.inlineSuggest.showToolbar": "always",
+  "window.zoomLevel": 1,
+  "cmake.showOptionsMovedNotification": false,
+  "arduino.useArduinoCli": true,
+  "cmake.configureOnOpen": true,
+  "explorer.confirmDelete": false,
+  "solargraph.useBundler": true,
+  "solargraph.folding": false,
+  "inlang.userId": "dec15223-630a-41d4-b63c-b581d3fd1218",
+  "sherlock.userId": "dec15223-630a-41d4-b63c-b581d3fd1218",
+  "lldb.library": "/Applications/Xcode.app/Contents/SharedFrameworks/LLDB.framework/Versions/A/LLDB",
+  "lldb.launch.expressions": "native",
+  "explorer.confirmDragAndDrop": false,
+  "lldb.suppressUpdateNotifications": true,
+  "github.copilot.chat.edits.codesearch.enabled": true,
+  "github.copilot.chat.codeGeneration.instructions": [
+    {
+      "file": ".windsurfrules"
+    }
+  ],
+  "github.copilot.chat.edits.temporalContext.enabled": true,
+  "github.copilot.chat.languageContext.typescript.enabled": true,
+  "github.copilot.chat.search.semanticTextResults": true,
+  "github.copilot.chat.editor.temporalContext.enabled": true,
+  "github.copilot.nextEditSuggestions.enabled": true
+}

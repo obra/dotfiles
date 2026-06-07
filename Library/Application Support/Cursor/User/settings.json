@@ -1,0 +1,20 @@
+{
+    "window.commandCenter": 1,
+    "cursor.diffs.useCharacterLevelDiffs": true,
+    "editor.accessibilitySupport": "off",
+    "workbench.preferredHighContrastColorTheme": "Anysphere",
+    "workbench.preferredHighContrastLightColorTheme": "Solarized Light",
+    "cursor.aipreview.enabled": true,
+    "cmake.showOptionsMovedNotification": false,
+    "files.autoSave": "afterDelay",
+    "nrf-connect.enableTelemetry": true,
+    "[typescriptreact]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "arduino.useArduinoCli": true,
+    "git.openRepositoryInParentFolders": "always",
+    "update.releaseTrack": "prerelease",
+    "cursor.composer.shouldShowMarkdownHoverParticipantActions2": true,
+    "cursor.general.enableShadowWorkspace": true,
+    "workbench.colorTheme": "Default Light+"
+}
