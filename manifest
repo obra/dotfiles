@@ -25,6 +25,12 @@ bin/idb
 .config/zsh/.zprofile
 .config/zsh/linux.zsh        linux
 
+# macOS defaults — curated system settings, reconciled via `homedir-manager defaults`
+# (see the maintaining-macos-defaults skill). Data only; nothing is applied automatically.
+.config/macos-defaults/desired.tsv          macos
+.config/macos-defaults/watched-domains      macos
+.config/macos-defaults/noise-deny           macos
+
 # Claude config — CLAUDE.md, commands, and skills. Skills are listed individually so that
 # host-specific project-linked skills under ~/.claude/skills are left untouched.
 .claude/CLAUDE.md

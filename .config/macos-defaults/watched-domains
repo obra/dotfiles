@@ -1,0 +1,7 @@
+# Domains that `homedir-manager defaults drift` scans for NEW (untracked) settings.
+# Tip: NSGlobalDomain is intentionally NOT watched — it has hundreds of state keys that drown
+# the signal. Its tracked keys in desired.tsv still get drift-checked; add it here only if you
+# want to fish for new global settings.
+com.apple.finder
+com.apple.dock
+com.apple.screencapture

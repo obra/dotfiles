@@ -1,0 +1,36 @@
+# Glob patterns (matched against the KEY name) that drift + whole-domain capture ignore.
+# These are machine state, not deliberate preferences.
+# Window geometry and saved view state
+* Frame
+NSWindow Frame *
+*StandardViewSettings*
+*IconViewSettings*
+*ListViewSettings*
+*ComputedViewSettings*
+*WindowSettings*
+# Recents, history, last-used
+*Recent*
+*MRU*
+GoToField*
+# Internal counters, timestamps, telemetry
+mod-count
+*-count
+lastShowIndicatorTime
+*Timestamp
+# Shared file lists (sandbox bookmarks)
+*LSSharedFileList*
+# Upgrade markers, provider IDs, disclosure/login state, locale, caches, geometry, stamps
+*Location
+*Upgraded*
+*UpgradeLevel
+*ProviderID
+*DisclosedState
+*Cache
+*Width
+*stamp
+*SerialNumber
+location-last
+last-selection-display
+loc
+region
+version
