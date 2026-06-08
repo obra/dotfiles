@@ -7,7 +7,7 @@ description: Use when documentation may have drifted from the code, CLI, config,
 
 ## Overview
 
-A doc is a set of **claims about reality**. Auditing means verifying those claims against ground truth (code, CLI, config, API) and fixing what's wrong. The dangerous mistake is treating *every* doc as something that must match the code. **First decide whether a doc is even supposed to track current reality.** Then auto-fix only what is *determinate*, route everything ambiguous to the human, and never rewrite a historical record.
+A doc is a set of **claims about reality**. Auditing means verifying those claims against ground truth (code, CLI, config, API) and fixing what's wrong. The dangerous mistake is treating *every* doc as something that must match the code. **First decide whether a doc is even supposed to track current reality.** Then auto-fix only what is *determinate*, route everything ambiguous to the human, and never rewrite a historical record. And when you're auditing a whole doc *set*, audit the **set** too — for duplication, gaps, contradictions, and structure — not just each doc in isolation (Phase 4).
 
 **Violating the letter of these rules is violating the spirit of them.** "I was bringing the docs up to date" is exactly how design docs get their history erased.
 
@@ -55,15 +55,35 @@ Auto-fix a claim **only when ALL hold**:
 - **Behavioral / semantic claims** ("does X when Y", sequencing, rationale).
 - **Claims whose ground truth lives in another repo or an external binary.**
 
+## Verify the claim, not just the symbol
+
+Confirming that the *thing* a doc names exists is not confirming the *claim about it*. A claim of the form "X is validated / X happens when Y / X is done by Z / X is configured as W" is verified only by the **code path that enacts it** — the validator that rejects, the handler that closes the stream, the function that computes the value, the line that loads the asset — **not** by X's mere existence. Check the verb, not just the noun.
+
+- "the loader rejects an emit node that declares `runner`" → find the rejection in the validator, or the claim is false.
+- "the stream closes when the run is terminal" → find the close on *every* terminal state, or name the one it misses.
+- "diffs are computed in `internal/document`" → find the call there, not just the function's definition.
+- "Tailwind is loaded from a CDN" → check the actual `<script src>`, not that Tailwind is used.
+
+This is the most common false-`matches`: the noun checks out, so the verifier waves the verb through. State the mechanism, and point the citation at the code that *does* the thing claimed.
+
 ## Process
 
 **0 — Scope, orient, classify (main thread).** Build a **ground-truth map** first: where CLI defs, routes, config, and core types live (read `CLAUDE.md`'s package map and the directory layout). Propose the group-level classification; **confirm with the human**.
 
-**1 — Verify.** For **evergreen** docs, fan out one subagent per doc (cap the width; budget claims per doc). Each extracts atomic claims, classifies per the rubric, verifies against ground truth, and returns findings **with a `file:line` or command-output citation for every verdict — including "matches"**. No edits. **Point-in-time** docs: handle in the main thread (or one batched agent) — no claim-vs-code checking, only meta-detection (superseded-but-unmarked, missing date, linked-as-live, broken refs).
+**1 — Verify.** For **evergreen** docs, fan out one subagent per doc (cap the width; budget claims per doc). Each extracts atomic claims, classifies per the rubric, verifies against ground truth — the **code path that enacts each claim, not just that the named symbol exists** (see "Verify the claim, not just the symbol") — and returns findings **with a `file:line` or command-output citation for every verdict, including "matches"**. No edits. **Point-in-time** docs: handle in the main thread (or one batched agent) — no claim-vs-code checking, only meta-detection (superseded-but-unmarked, missing date, linked-as-live, broken refs).
 
 **2 — Triage & apply (main thread).** Apply the determinate auto-fixes to the working tree. Run a **bounded, prioritized** interview on everything else (evergreen high-confidence-stale first; defer the long tail to the report). Apply approved point-in-time meta-fixes.
 
-**3 — Adversarially verify your own edits (main thread).** Before declaring done, **re-check the edits you just applied** — an audit's own fixes are exactly where confident-but-wrong claims hide: an over-claim, a stale code *comment* restated as fact, a removal that dropped a still-live concept, an example that won't validate. Dispatch **two or more competing subagents** that race to find the largest number of legitimate errors in the applied diff, each claim re-verified against ground truth with a `file:line` or command-output citation. Tell them explicitly they are competing and that **padding or inflating findings disqualifies them** — that framing is what keeps the pass honest. Fix every confirmed finding. Only then **stamp the last-reviewed marker** on the verified evergreen docs, and leave everything **uncommitted** for human review.
+**3 — Adversarially verify your own edits (main thread).** Before declaring done, **re-check the edits you just applied** — an audit's own fixes are exactly where confident-but-wrong claims hide: an over-claim, a stale code *comment* restated as fact, a removal that dropped a still-live concept, an example that won't validate. Dispatch **two or more competing subagents** that race to find the largest number of legitimate errors in the applied diff, each claim re-verified against the code path that *enacts* it (not just symbol existence) with a `file:line` or command-output citation. Tell them explicitly they are competing and that **padding or inflating findings disqualifies them** — that framing is what keeps the pass honest. Fix every confirmed finding. Only then **stamp the last-reviewed marker** on the verified evergreen docs, and leave everything **uncommitted** for human review.
+
+**4 — Corpus review (the whole set, not one doc at a time).** Phases 1–3 are per-doc, so they are **blind to set-level defects**. When you audit a doc *set* (not a single file), run a pass over the whole set — independent/competing agents, fed the canonical-owner scheme:
+
+- **Duplication** — the same fact stated substantively in 2+ docs drifts (and already has, in practice). Assign each fact a single **canonical owner** (HTTP routes → the API doc, CLI flags → the CLI doc, field schemas → the schema doc, runtime/firing semantics → the runtime doc, event types → the logging doc, …) and replace the copies with cross-references. Fan out **one agent per doc** for the trimming — each owns *one file*, so the edits don't race.
+- **Coverage / gaps** — enumerate the codebase's surfaces (packages, CLI commands, routes, event types, config) and check each is documented *somewhere*. A missing doc is invisible to a per-doc audit — you only find it by listing what *should* exist. Write the missing docs (to the same standard) or file the gaps.
+- **Cross-doc contradictions** — the same fact stated two different ways in two docs (one is wrong). Reconcile at the canonical owner.
+- **Structure / hygiene** — is there an **index** (one doc listing the set with one-liners)? Maintain it. Is naming consistent? Are point-in-time docs misfiled in the evergreen folder? Is the ordering a fossil (sequential numbers implying a frozen, complete scope)?
+
+Per-doc cleanliness is not a healthy set. This phase catches exactly the class Phases 1–3 cannot.
 
 ## Last-reviewed marker
 
@@ -88,6 +108,8 @@ Date + SHA are **provenance only** (HEAD at review time), not a scoping key. Sta
 - Editing a file that says "generated" / "do not edit". → Skip it.
 - Marking a claim "matches" **without a citation**. → Cite it or don't claim it.
 - About to **finish without a second adversarial pass over your own edits**. → Run the competing verify pass (Phase 3) first; fix what it finds.
+- Marking a claim "matches" because the **symbol exists**, without checking the code *does* what's claimed about it. → Verify the verb, not the noun.
+- Audited each doc, never looked at the **set** (duplication, gaps, contradictions, index). → Per-doc passes are blind to set-level defects; run the corpus review (Phase 4).
 
 ## Rationalizations
 
@@ -102,6 +124,8 @@ Date + SHA are **provenance only** (HEAD at review time), not a scoping key. Sta
 | "I'll bring the example up to the new schema." | Structural example rewrites change meaning → interview, don't auto-fix. |
 | "The grep found nothing, the feature's gone." | A grep miss is not proof of removal. Check git history; it may be renamed. |
 | "37 vs. ~40 is close, I'll just write the real number." | Counts have no canonical convention — hand it to the human. |
+| "The symbol/route/field exists, so the claim checks out." | Existence ≠ the claim. Verify the code path that *enacts* it (the validator/handler/call site), not just that the noun exists. |
+| "Every doc verified clean, so the docs are good." | Per-doc accuracy ≠ a healthy set. Duplication, missing docs, and cross-doc contradictions only surface at the corpus level (Phase 4). |
 
 ## Common mistakes
 
@@ -110,3 +134,5 @@ Date + SHA are **provenance only** (HEAD at review time), not a scoping key. Sta
 - An unbounded first-run interview backlog — prioritize, defer the tail to a report.
 - Auto-committing the audit — leave it uncommitted for human review.
 - Declaring done without adversarially verifying your own edits — your fixes are a prime hiding spot for confident-but-wrong claims (Phase 3).
+- Treating per-doc verification as the whole job — duplication, gaps, cross-doc contradictions, and a missing index are set-level defects invisible to a per-doc pass (Phase 4).
+- Verifying the noun, not the verb — confirming a symbol exists instead of confirming the code does what the doc claims about it.
