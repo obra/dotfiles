@@ -4,6 +4,9 @@
 # Local env written by installers (rustup/uv put a shim at ~/.local/bin/env)
 [ -r "$HOME/.local/bin/env" ] && . "$HOME/.local/bin/env"
 
+# z — directory jumper (zoxide provides the `z` command, matching macOS's rupa/z)
+command -v zoxide >/dev/null && eval "$(zoxide init zsh)"
+
 # Start an ssh-agent only if one isn't already provided
 [ -z "${SSH_AUTH_SOCK:-}" ] && command -v ssh-agent >/dev/null && eval "$(ssh-agent -s)" >/dev/null 2>&1
 
