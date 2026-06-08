@@ -1,0 +1,31 @@
+#!/bin/sh
+# homedir-sync — launch an interactive Claude that figures out whatever you changed under
+# $HOME and reconciles it through homedir-manager, even when you don't remember what you touched.
+#
+# It seeds the session with a discover-then-reconcile brief and lets the managing-homedir skill
+# drive: check the content repos for uncommitted edits, audit for drifted/clobbered symlinks and
+# leaked secrets, sweep for new untracked config, deploy what's needed, and commit/push — pausing
+# for your call before anything outward (a push or a fleet deploy).
+#
+# Usage:  homedir-sync ["extra context, e.g. 'just the local box' or 'sync the whole fleet'"]
+#
+# Runs from $HOME so the whole homedir (and the ~/git content repos) is in scope.
+
+set -eu
+
+EXTRA=${1:-}
+
+PROMPT="Use the managing-homedir skill. Get my homedir back in sync — I've made local changes I
+may not remember. First DISCOVER what drifted, reporting what you find:
+  1. git status in ~/git/dotfiles and ~/git/dotfiles-private (uncommitted edits to tracked config);
+  2. homedir-manager audit (leaked secrets, deploy drift / clobbered symlinks, bad perms);
+  3. ~/git/dotfiles-private/bin/config-coverage (new untracked config worth a decision);
+  4. whether tracked content is committed/pushed and the other fleet hosts are behind.
+Then RECONCILE: re-link any drifted symlinks (homedir-manager install), commit + push tracked
+changes, and surface any untracked config or plaintext secret for my decision — never auto-publish
+to the public repo without showing me the file first. Confirm homedir-manager audit and
+config-coverage end green. Show me a short plan before anything outward (pushes, fleet deploys),
+then proceed. ${EXTRA:+Extra context from me: }$EXTRA"
+
+cd "$HOME"
+exec claude --add-dir "$HOME/git" "$PROMPT"
