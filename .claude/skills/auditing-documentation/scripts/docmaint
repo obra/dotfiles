@@ -102,8 +102,138 @@ def parse_dictionary(text: str) -> Dictionary:
     return d
 
 
+def glob_match(path: str, pattern: str) -> bool:
+    """fnmatch-style match where ** crosses directory separators and * does not."""
+    out = []
+    i = 0
+    while i < len(pattern):
+        c = pattern[i]
+        if c == "*":
+            if pattern[i : i + 3] == "**/":
+                out.append(r"(?:.*/)?")
+                i += 3
+                continue
+            if pattern[i : i + 2] == "**":
+                out.append(r".*")
+                i += 2
+                continue
+            out.append(r"[^/]*")
+        elif c == "?":
+            out.append(r"[^/]")
+        else:
+            out.append(re.escape(c))
+        i += 1
+    return re.fullmatch("".join(out), path) is not None
+
+
+class Violation:
+    def __init__(self, path: str, lineno: int, found: str, replacement: str):
+        self.path, self.lineno, self.found, self.replacement = path, lineno, found, replacement
+
+
+class ScanResult:
+    def __init__(self):
+        self.violations: list[Violation] = []
+        self.candidates: list[str] = []   # temporary-exception terms with zero matches
+
+
+def _sweepable_files(root: Path) -> list[str]:
+    files = []
+    for rel in git(root, "ls-files").splitlines():
+        if rel == str(DICT_RELPATH) or rel.startswith(SWEEP_EXCLUDE_PREFIXES):
+            continue
+        files.append(rel)
+    return files
+
+
+def _read_text(root: Path, rel: str) -> str | None:
+    try:
+        text = (root / rel).read_text(encoding="utf-8")
+    except (UnicodeDecodeError, OSError):
+        return None
+    head = "\n".join(text.splitlines()[:5]).lower()
+    if any(marker in head for marker in GENERATED_MARKERS):
+        return None
+    return text
+
+
+def _word_re(term: str, ignorecase: bool) -> re.Pattern:
+    return re.compile(
+        r"(?<![\w-])" + re.escape(term) + r"(?![\w-])",
+        re.IGNORECASE if ignorecase else 0,
+    )
+
+
+def run_scan(root: Path) -> ScanResult:
+    d = parse_dictionary((root / DICT_RELPATH).read_text(encoding="utf-8"))
+    result = ScanResult()
+
+    # (regex, canonical/replacement, synonym-or-None). syn None = Name case-variant check.
+    checks: list[tuple[re.Pattern, str, str]] = []
+    for e in d.entries:
+        for syn, manual in e.synonyms:
+            if manual:
+                continue
+            checks.append((_word_re(syn, ignorecase=True), e.name, syn))
+        if e.section == "Names":
+            # Case-variant check: case-insensitive hit whose exact text != canonical.
+            checks.append((_word_re(e.name, ignorecase=True), e.name, None))
+
+    exc_hits = {ex.term: 0 for ex in d.exceptions}
+
+    for rel in _sweepable_files(root):
+        text = _read_text(root, rel)
+        if text is None:
+            continue
+        for lineno, line in enumerate(text.splitlines(), 1):
+            for pattern, canonical, syn in checks:
+                for m in pattern.finditer(line):
+                    found = m.group(0)
+                    if syn is None and found == canonical:
+                        continue  # Name in canonical case: clean
+                    term_key = syn if syn is not None else found
+                    covered = any(
+                        ex.term.lower() == term_key.lower()
+                        and any(glob_match(rel, g) for g in ex.globs)
+                        for ex in d.exceptions
+                    )
+                    if covered:
+                        continue
+                    result.violations.append(Violation(rel, lineno, found, canonical))
+            # Exception liveness: count term presence inside its own globs.
+            for ex in d.exceptions:
+                if any(glob_match(rel, g) for g in ex.globs):
+                    if _word_re(ex.term, ignorecase=True).search(line):
+                        exc_hits[ex.term] += 1
+
+    for ex in d.exceptions:
+        if ex.status == "temporary" and exc_hits[ex.term] == 0:
+            result.candidates.append(ex.term)
+    return result
+
+
 def cmd_scan(args: argparse.Namespace) -> int:
-    raise NotImplementedError
+    root = args.root.resolve()
+    result = run_scan(root)
+    lines = [
+        f"{v.path}:{v.lineno}: '{v.found}' -> use '{v.replacement}'"
+        for v in result.violations
+    ]
+    for term in result.candidates:
+        lines.append(
+            f"exception '{term}' [temporary] matches nothing under its globs — "
+            f"removal candidate (confirm via `git log -S '{term}'` before removing)"
+        )
+    with tempfile.NamedTemporaryFile(
+        "w", delete=False, prefix="docmaint-scan-", suffix=".txt"
+    ) as fh:
+        fh.write("\n".join(lines) + ("\n" if lines else ""))
+        report = fh.name
+    print(
+        f"scan: {len(result.violations)} violation(s), "
+        f"{len(result.candidates)} removal candidate(s)  (report: {report})"
+    )
+    return 1 if result.violations else 0
 
 
 def cmd_stamp(args: argparse.Namespace) -> int:
