@@ -216,6 +216,41 @@ class TestScan(unittest.TestCase):
         self.assertNotIn("Traceback", proc.stderr)
 
 
+class TestStamp(unittest.TestCase):
+    def test_set_appends_block_with_separator(self):
+        body = "# Doc\n\nClaims.\n"
+        out = docmaint.stamp_text(body, "2026-06-09", "abc1234", deferred=0)
+        self.assertTrue(out.endswith(
+            "---\n<!-- doc-audit:last-reviewed -->\n"
+            "_Last reviewed: 2026-06-09 · commit `abc1234` · verified against code._\n"
+        ))
+        self.assertTrue(out.startswith("# Doc\n\nClaims.\n"))
+
+    def test_set_reuses_trailing_rule(self):
+        body = "# Doc\n\n---\n"
+        out = docmaint.stamp_text(body, "2026-06-09", "abc1234", deferred=0)
+        self.assertEqual(out.count("---"), 1)
+
+    def test_restamp_is_idempotent(self):
+        body = "# Doc\n"
+        once = docmaint.stamp_text(body, "2026-06-09", "abc1234", deferred=2)
+        twice = docmaint.stamp_text(once, "2026-06-10", "def5678", deferred=0)
+        self.assertEqual(twice.count(docmaint.STAMP_SENTINEL), 1)
+        self.assertIn("def5678", twice)
+        self.assertNotIn("abc1234", twice)
+        self.assertNotIn("deferred", twice)
+
+    def test_deferred_recorded_and_parsed(self):
+        out = docmaint.stamp_text("# D\n", "2026-06-09", "abc1234", deferred=2)
+        self.assertIn("(2 claims deferred to review)", out)
+        stamp = docmaint.parse_stamp(out)
+        self.assertEqual((stamp.date, stamp.sha, stamp.deferred),
+                         ("2026-06-09", "abc1234", 2))
+
+    def test_parse_stamp_absent(self):
+        self.assertIsNone(docmaint.parse_stamp("# D\nno stamp here\n"))
+
+
 if __name__ == "__main__":
     result = unittest.main(exit=False).result
     failed = len(result.failures) + len(result.errors)

@@ -247,8 +247,63 @@ def cmd_scan(args: argparse.Namespace) -> int:
     return 1 if result.violations else 0
 
 
+STAMP_LINE_RE = re.compile(
+    r"_Last reviewed: (?P<date>\d{4}-\d{2}-\d{2}) · commit `(?P<sha>[0-9a-f]+)` · "
+    r"verified against code(?: \((?P<deferred>\d+) claims? deferred to review\))?\._"
+)
+
+
+class Stamp:
+    def __init__(self, date: str, sha: str, deferred: int):
+        self.date, self.sha, self.deferred = date, sha, deferred
+
+
+def parse_stamp(text: str) -> Stamp | None:
+    if STAMP_SENTINEL not in text:
+        return None
+    m = STAMP_LINE_RE.search(text)
+    if not m:
+        return None
+    return Stamp(m.group("date"), m.group("sha"), int(m.group("deferred") or 0))
+
+
+def _stamp_line(date: str, sha: str, deferred: int) -> str:
+    extra = f" ({deferred} claims deferred to review)" if deferred else ""
+    return f"_Last reviewed: {date} · commit `{sha}` · verified against code{extra}._"
+
+
+def stamp_text(text: str, date: str, sha: str, deferred: int) -> str:
+    line = _stamp_line(date, sha, deferred)
+    if STAMP_SENTINEL in text:
+        # Replace the existing block: sentinel line + the stamp line after it.
+        text = STAMP_LINE_RE.sub(line, text, count=1)
+        return text
+    body = text.rstrip("\n")
+    if body.endswith("\n---") or body == "---":
+        return body + f"\n{STAMP_SENTINEL}\n{line}\n"
+    return body + f"\n\n---\n{STAMP_SENTINEL}\n{line}\n"
+
+
 def cmd_stamp(args: argparse.Namespace) -> int:
-    raise NotImplementedError
+    root = args.root.resolve()
+    if args.set:
+        doc = root / args.set
+        sha = git(root, "rev-parse", "--short", "HEAD").strip()
+        today = datetime.date.today().isoformat()
+        doc.write_text(stamp_text(doc.read_text(encoding="utf-8"), today, sha,
+                                  args.deferred), encoding="utf-8")
+        print(f"stamped {args.set} @ {sha}"
+              + (f" ({args.deferred} deferred)" if args.deferred else ""))
+        return 0
+    # default / --list: show every stamped markdown file
+    for rel in git(root, "ls-files", "*.md").splitlines():
+        text = _read_text(root, rel)
+        if text is None:
+            continue
+        stamp = parse_stamp(text)
+        if stamp:
+            print(f"{rel}\t{stamp.date}\t{stamp.sha}\tdeferred={stamp.deferred}")
+    return 0
 
 
 def cmd_stale(args: argparse.Namespace) -> int:
