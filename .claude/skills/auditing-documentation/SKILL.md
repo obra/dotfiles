@@ -1,115 +1,229 @@
 ---
-name: auditing-documentation
-description: Use when documentation may have drifted from the code, CLI, config, or API it describes — auditing docs for staleness, checking whether a doc still matches current reality, "the docs are out of date", before a release, or when you don't trust a doc's accuracy and want it verified and fixed.
+name: maintaining-documentation
+description: Use when documentation needs creating, checking, or maintaining — docs may have drifted from code, pre-release doc verification, updating docs after finishing code work, adding or enforcing project terminology, deciding where a new doc should live, or a routine re-audit of previously verified docs.
 ---
 
-# Auditing Documentation
+# Maintaining Documentation
 
 ## Overview
 
-A doc is a set of **claims about reality**. Auditing means verifying those claims against ground truth (code, CLI, config, API) and fixing what's wrong. The dangerous mistake is treating *every* doc as something that must match the code. **First decide whether a doc is even supposed to track current reality.** Then auto-fix only what is *determinate*, route everything ambiguous to the human, and never rewrite a historical record. And when you're auditing a whole doc *set*, audit the **set** too — for duplication, gaps, contradictions, and structure — not just each doc in isolation (Phase 4).
+A doc is a set of **claims about reality**; this skill keeps a project's docs
+matching reality over time. The same law binds every flow: decide whether a
+doc is even supposed to track current reality (classify first), auto-fix only
+what is *determinate*, route everything ambiguous to the human, and never
+rewrite a historical record. **Violating the letter of these rules is
+violating the spirit of them.** "I was bringing the docs up to date" is
+exactly how design docs get their history erased.
 
-**Violating the letter of these rules is violating the spirit of them.** "I was bringing the docs up to date" is exactly how design docs get their history erased.
+## Dispatch — read the flow file before doing anything
 
-## When to use
+| Situation | You MUST read |
+| --- | --- |
+| Full audit: "docs are out of date", pre-release, untrusted doc set | `references/audit.md` |
+| Routine re-check of previously audited docs | `references/incremental.md` |
+| Just finished code work; update the docs that ride along | `references/write-path.md` |
+| Create/extend the dictionary; term disputes; exceptions | `references/dictionary.md` |
+| Writing a brand-new doc; "where does this doc go?" | `references/new-docs.md` |
 
-- "The docs are out of date / don't match the code."
-- Before a release, when doc accuracy matters.
-- You don't trust a README/spec/reference and want it verified.
-
-**Not for:** writing new docs, prose copyediting/style, or docs with no code to check against.
+These are hard gates: do not start a flow from memory of this table. Flows
+add process; the law below binds all of them and is never restated in flow
+files.
 
 ## STOP: classify before you edit (evergreen vs. point-in-time)
 
-The single biggest failure is rewriting a dated design/plan/spec to "match the code." A spec from three months ago describing how something *should* work is **not wrong** when the code later diverged — editing it to match destroys the record.
+The single biggest failure is rewriting a dated design/plan/spec to "match
+the code." A spec from three months ago describing how something *should*
+work is **not wrong** when the code later diverged — editing it to match
+destroys the record.
 
-- **Evergreen** — README, ABOUT, CLAUDE.md, tutorials, living API/schema reference. Contract: *reflects current reality*. Drift is a defect → fix.
-- **Point-in-time** — design specs, plans, brainstorm notes (often dated, or under `docs/specs|plans|…`). Contract: *true as of its date*. Drift vs. current code is **expected**. Never rewrite to match code; at most add a supersede banner or as-of date.
-- **Mixed / unclear** — conflicting signals (a dated-folder `README`) → treat the whole doc as interview-only.
+- **Evergreen** — README, ABOUT, CLAUDE.md, tutorials, living API/schema
+  reference. Contract: *reflects current reality*. Drift is a defect → fix.
+- **Point-in-time** — design specs, plans, brainstorm notes (often dated, or
+  under `docs/specs|plans|…`). Contract: *true as of its date*. Drift vs.
+  current code is **expected**. Never rewrite to match code; at most add a
+  supersede banner or as-of date.
+- **Mixed / unclear** — conflicting signals (a dated-folder `README`) → treat
+  the whole doc as interview-only.
 
-Classify the doc set **first**, at the **group level** (folder globs + named exceptions), and **confirm with the human** before editing anything. Precedence: a point-in-time signal (dated filename, point-in-time directory) **beats** an evergreen name like `README`. Do **not** decide this per-doc by gut as you go — surface it as one decision.
+Classify the doc set **first**, at the **group level** (folder globs + named
+exceptions), and **confirm with the human** before editing anything.
+Precedence: a point-in-time signal (dated filename, point-in-time directory)
+**beats** an evergreen name like `README`. Do **not** decide this per-doc by
+gut as you go — surface it as one decision.
 
-**The classification confirmation is the one gate you never skip** — not under time pressure, not under authority, not under "just be decisive, don't kick it back to me." A one-line confirm costs seconds; skipping it is what turns an audit into an erased design record. And when classification is genuinely ambiguous (e.g. a reference-looking file inside a `specs/` folder that also holds design docs), **resolve to the safe side — treat it as point-in-time and confirm** — because a body rewrite is irreversible to the record. Disclosing your assumption in a footnote *after* you've rewritten the body is too late.
+**The classification confirmation is the one gate you never skip** — not
+under time pressure, not under authority, not under "just be decisive, don't
+kick it back to me." A one-line confirm costs seconds; skipping it is what
+turns an audit into an erased design record. And when classification is
+genuinely ambiguous (e.g. a reference-looking file inside a `specs/` folder
+that also holds design docs), **resolve to the safe side — treat it as
+point-in-time and confirm** — because a body rewrite is irreversible to the
+record. Disclosing your assumption in a footnote *after* you've rewritten the
+body is too late.
+
+The confirmed classification **persists in the doc index** (`Class` column —
+see Artifacts). Editing flows gate on it: no index → run audit Phase 0 first.
+Never classify by gut mid-flow.
 
 ## Scope & exclusions
 
-Default target: `README`, top-level `*.md`, `docs/**`, `CLAUDE.md`. **Always exclude:** git-ignored paths, `.claude/`, `.private-journal/`, worktrees; **generated / foreign-owned docs** (any "do not edit" / "generated by" sentinel — editing them is futile, the next regeneration wipes it); non-markdown.
+Default target: `README`, top-level `*.md`, `docs/**`, `CLAUDE.md`. **Always
+exclude:** git-ignored paths, `.claude/`, `.private-journal/`, worktrees;
+**generated / foreign-owned docs** (any "do not edit" / "generated by"
+sentinel — editing them is futile, the next regeneration wipes it);
+non-markdown. The dictionary (`docs/DICTIONARY.md`) is excluded from its own
+terminology sweep.
 
 ## The rubric: what may be auto-fixed
 
 Auto-fix a claim **only when ALL hold**:
 
 1. the doc is **evergreen**;
-2. the claim is **mechanical** — an identifier/path, CLI flag, config/env name+default, API route/field, or a token-level example fix;
-3. a **single live (non-test) counterpart** exists in the code, so the right value is *determined, not guessed* (multiple hits / test-only / no hit → interview);
-4. it's a **local token replacement** that leaves the surrounding sentence true;
-5. a missing counterpart is **confirmed removed vs. renamed via git history** (`git log -S`, `--follow`, blame) before you conclude anything.
+2. the claim is **mechanical** — an identifier/path, CLI flag, config/env
+   name+default, API route/field, or a token-level example fix;
+3. a **single live (non-test) counterpart** exists in the code, so the right
+   value is *determined, not guessed* (multiple hits / test-only / no hit →
+   interview);
+4. it's a **local token replacement** that leaves the surrounding sentence
+   true;
+5. a missing counterpart is **confirmed removed vs. renamed via git history**
+   (`git log -S`, `--follow`, blame) before you conclude anything.
+
+**Dictionary clause.** In evergreen prose only, a deprecated synonym may be
+auto-fixed when ALL hold: the synonym maps to exactly one dictionary entry
+(whose heading is the replacement); the match is whole-word; no exception
+covers it; and the replacement leaves the surrounding sentence true. The
+determinant is the dictionary instead of a code counterpart — conditions 1, 4
+and 5 still apply. Code identifiers, UI strings: never auto-fixed — findings
+only (rename / add entry / add exception). Commit messages: dictionary terms
+in new ones; history is never flagged.
 
 **Always interview — never auto-fix — regardless of category:**
 
-- **Counts & inventories** ("14 workflows", "~40 files") — no canonical counting convention.
-- **Bare line-number citations** (`file.go:120-130`) — they drift on every edit. Recommend rewriting to `file:symbol`; never silently renumber.
-- **Absence / negative claims** ("there is no env-var fallback") — you can't grep-prove a negative.
-- **Cross-reference repair** — detecting a broken link is fine; choosing its new target rarely is.
-- **Structural changes to embedded examples** — rewriting an example's *shape* to a new schema.
+- **Counts & inventories** ("14 workflows", "~40 files") — no canonical
+  counting convention.
+- **Bare line-number citations** (`file.go:120-130`) — they drift on every
+  edit. Recommend rewriting to `file:symbol`; never silently renumber.
+- **Absence / negative claims** ("there is no env-var fallback") — you can't
+  grep-prove a negative.
+- **Cross-reference repair** — detecting a broken link is fine; choosing its
+  new target rarely is.
+- **Structural changes to embedded examples** — rewriting an example's
+  *shape* to a new schema.
 - **Behavioral / semantic claims** ("does X when Y", sequencing, rationale).
 - **Claims whose ground truth lives in another repo or an external binary.**
 
 ## Verify the claim, not just the symbol
 
-Confirming that the *thing* a doc names exists is not confirming the *claim about it*. A claim of the form "X is validated / X happens when Y / X is done by Z / X is configured as W" is verified only by the **code path that enacts it** — the validator that rejects, the handler that closes the stream, the function that computes the value, the line that loads the asset — **not** by X's mere existence. Check the verb, not just the noun.
+Confirming that the *thing* a doc names exists is not confirming the *claim
+about it*. A claim of the form "X is validated / X happens when Y / X is done
+by Z / X is configured as W" is verified only by the **code path that enacts
+it** — the validator that rejects, the handler that closes the stream, the
+function that computes the value, the line that loads the asset — **not** by
+X's mere existence. Check the verb, not just the noun.
 
-- "the loader rejects an emit node that declares `runner`" → find the rejection in the validator, or the claim is false.
-- "the stream closes when the run is terminal" → find the close on *every* terminal state, or name the one it misses.
-- "diffs are computed in `internal/document`" → find the call there, not just the function's definition.
-- "Tailwind is loaded from a CDN" → check the actual `<script src>`, not that Tailwind is used.
+- "the loader rejects an emit node that declares `runner`" → find the
+  rejection in the validator, or the claim is false.
+- "the stream closes when the run is terminal" → find the close on *every*
+  terminal state, or name the one it misses.
+- "diffs are computed in `internal/document`" → find the call there, not just
+  the function's definition.
+- "Tailwind is loaded from a CDN" → check the actual `<script src>`, not that
+  Tailwind is used.
 
-This is the most common false-`matches`: the noun checks out, so the verifier waves the verb through. State the mechanism, and point the citation at the code that *does* the thing claimed.
+This is the most common false-`matches`: the noun checks out, so the verifier
+waves the verb through. State the mechanism, and point the citation at the
+code that *does* the thing claimed.
 
-## Process
+## Artifacts: dictionary and index
 
-**0 — Scope, orient, classify (main thread).** Build a **ground-truth map** first: where CLI defs, routes, config, and core types live (read `CLAUDE.md`'s package map and the directory layout). Propose the group-level classification; **confirm with the human**.
+The skill maintains exactly **two** artifacts per project, plus inline
+stamps. Never a third metadata file.
 
-**1 — Verify.** For **evergreen** docs, fan out one subagent per doc (cap the width; budget claims per doc). Each extracts atomic claims, classifies per the rubric, verifies against ground truth — the **code path that enacts each claim, not just that the named symbol exists** (see "Verify the claim, not just the symbol") — and returns findings **with a `file:line` or command-output citation for every verdict, including "matches"**. No edits. **Point-in-time** docs: handle in the main thread (or one batched agent) — no claim-vs-code checking, only meta-detection (superseded-but-unmarked, missing date, linked-as-live, broken refs).
+- **`docs/DICTIONARY.md`** — normative terminology for docs, code
+  identifiers, commit messages, and UI strings; divergences live in its
+  Exceptions section, scoped by path globs only. Template:
+  `templates/DICTIONARY-template.md`; grammar and lifecycle:
+  `references/dictionary.md`. Evergreen, stamped, and the canonical owner of
+  terminology.
+- **The doc index** — a sentinel-fenced table (`<!-- doc-index:begin/end -->`)
+  in `docs/README.md`, or standalone `docs/INDEX.md` where no README exists.
+  Columns: Doc | What | Class | Owns. `Class` is the persisted
+  classify-and-confirm output; `Owns` is machine-readable path globs (what
+  `docmaint stale` diffs). Template: `templates/INDEX-template.md`.
+- **`scripts/docmaint`** (`scan | stamp | stale`, `--help` for usage) does
+  the mechanical work. It never edits docs; agents do, under the rubric.
 
-**2 — Triage & apply (main thread).** Apply the determinate auto-fixes to the working tree. Run a **bounded, prioritized** interview on everything else (evergreen high-confidence-stale first; defer the long tail to the report). Apply approved point-in-time meta-fixes.
+## Stamp contract
 
-**3 — Adversarially verify your own edits (main thread).** Before declaring done, **re-check the edits you just applied** — an audit's own fixes are exactly where confident-but-wrong claims hide: an over-claim, a stale code *comment* restated as fact, a removal that dropped a still-live concept, an example that won't validate. Dispatch **two or more competing subagents** that race to find the largest number of legitimate errors in the applied diff, each claim re-verified against the code path that *enacts* it (not just symbol existence) with a `file:line` or command-output citation. Tell them explicitly they are competing and that **padding or inflating findings disqualifies them** — that framing is what keeps the pass honest. Fix every confirmed finding. Only then **stamp the last-reviewed marker** on the verified evergreen docs, and leave everything **uncommitted** for human review.
-
-**4 — Corpus review (the whole set, not one doc at a time).** Phases 1–3 are per-doc, so they are **blind to set-level defects**. When you audit a doc *set* (not a single file), run a pass over the whole set — independent/competing agents, fed the canonical-owner scheme:
-
-- **Duplication** — the same fact stated substantively in 2+ docs drifts (and already has, in practice). Assign each fact a single **canonical owner** (HTTP routes → the API doc, CLI flags → the CLI doc, field schemas → the schema doc, runtime/firing semantics → the runtime doc, event types → the logging doc, …) and replace the copies with cross-references. Fan out **one agent per doc** for the trimming — each owns *one file*, so the edits don't race.
-- **Coverage / gaps** — enumerate the codebase's surfaces (packages, CLI commands, routes, event types, config) and check each is documented *somewhere*. A missing doc is invisible to a per-doc audit — you only find it by listing what *should* exist. Write the missing docs (to the same standard) or file the gaps.
-- **Cross-doc contradictions** — the same fact stated two different ways in two docs (one is wrong). Reconcile at the canonical owner.
-- **Structure / hygiene** — is there an **index** (one doc listing the set with one-liners)? Maintain it. Is naming consistent? Are point-in-time docs misfiled in the evergreen folder? Is the ordering a fossil (sequential numbers implying a frozen, complete scope)?
-
-Per-doc cleanliness is not a healthy set. This phase catches exactly the class Phases 1–3 cannot.
-
-## Last-reviewed marker
-
-On **evergreen docs only**, idempotently maintain one block at EOF (reuse a trailing `---` rule if present; find-and-replace on the sentinel, never stack duplicates):
+Evergreen docs carry one idempotent block at EOF (`docmaint stamp` maintains
+it; sentinel `<!-- doc-audit:last-reviewed -->`):
 
 ```
 ---
 <!-- doc-audit:last-reviewed -->
-_Last reviewed: 2026-06-07 · commit `abc1234` · verified against code (2 claims deferred to review)._
+_Last reviewed: 2026-06-09 · commit `abc1234` · verified against code (2 claims deferred to review)._
 ```
 
-Date + SHA are **provenance only** (HEAD at review time), not a scoping key. Stamp only docs you actually verified. **Don't stamp point-in-time docs** — they're frozen records, and re-stamping them is churn.
+The SHA is provenance **and** the incremental cursor — a deliberate change
+from the predecessor skill. Incremental re-audits are **triage, not
+soundness**: deferred claims keep a doc on the worklist regardless of SHA;
+claims with ground truth outside the repo are cleared only by full audits;
+terminology never depends on stamps (`docmaint scan` full-sweeps every run).
+**Stamping precondition (all flows):** no stamp without independent
+verification of the applied edits — full audits use two or more competing
+verifiers (Phase 3); diff- or worklist-bounded flows use at least one
+independent verifier. Don't stamp point-in-time docs. Stamp only what you
+verified.
+
+## Pragmatism law
+
+- Docs exist for readers. Before creating any doc, entry, or artifact, name
+  the reader. No reader → don't write it.
+- Adopt existing structures before imposing new ones.
+- Two artifacts per project (dictionary, index) plus stamps. Never a third.
+- A coverage gap is a finding to file, not a mandate to generate a doc.
+- The dictionary stays readable in one sitting: load-bearing terms only.
+- Write-path stays bounded by the diff. If maintenance isn't cheap, it won't
+  happen.
 
 ## Red flags — STOP
 
-- "I'll bring the docs up to date" across a whole spec/plan set **without classifying first**. → Classify and confirm first.
-- About to **renumber** a `file:line` citation. → Convert to `file:symbol` via interview.
-- About to **rewrite an example's structure** to the new schema. → Interview, not auto-fix.
-- Pressured to "be decisive / don't confirm", about to classify docs yourself and **rewrite their bodies**. → The classification confirm is the one gate you never skip. Surface it; a one-line yes costs seconds.
-- Concluding a feature was "removed" / deleting its docs **from a grep miss**. → Check git history first.
+- "I'll bring the docs up to date" across a whole spec/plan set **without
+  classifying first**. → Classify and confirm first.
+- About to **renumber** a `file:line` citation. → Convert to `file:symbol`
+  via interview.
+- About to **rewrite an example's structure** to the new schema. →
+  Interview, not auto-fix.
+- Pressured to "be decisive / don't confirm", about to classify docs
+  yourself and **rewrite their bodies**. → The classification confirm is the
+  one gate you never skip. Surface it; a one-line yes costs seconds.
+- Concluding a feature was "removed" / deleting its docs **from a grep
+  miss**. → Check git history first.
 - "Close enough, I'll just fix the count." → Counts go to the human.
 - Editing a file that says "generated" / "do not edit". → Skip it.
-- Marking a claim "matches" **without a citation**. → Cite it or don't claim it.
-- About to **finish without a second adversarial pass over your own edits**. → Run the competing verify pass (Phase 3) first; fix what it finds.
-- Marking a claim "matches" because the **symbol exists**, without checking the code *does* what's claimed about it. → Verify the verb, not the noun.
-- Audited each doc, never looked at the **set** (duplication, gaps, contradictions, index). → Per-doc passes are blind to set-level defects; run the corpus review (Phase 4).
+- Marking a claim "matches" **without a citation**. → Cite it or don't claim
+  it.
+- About to **finish without a second adversarial pass over your own edits**.
+  → Run the competing verify pass (audit Phase 3) first; fix what it finds.
+- Marking a claim "matches" because the **symbol exists**, without checking
+  the code *does* what's claimed about it. → Verify the verb, not the noun.
+- Audited each doc, never looked at the **set** (duplication, gaps,
+  contradictions, index). → Per-doc passes are blind to set-level defects;
+  run the corpus review (audit Phase 4).
+- About to remove a `[permanent]` exception, or a `[temporary]` one on scan
+  evidence alone. → Permanent: never. Temporary: confirm via git history
+  first (a grep miss is not resolution).
+- About to stamp a doc whose edits nobody independently verified. → The
+  stamping precondition applies in every flow, not just full audits.
+- About to write a doc, or a dictionary entry, no one asked to read. → Name
+  the reader (pragmatism law).
+- About to add a third per-project metadata file. → Two artifacts. Never a
+  third.
+- About to write an exception scope in prose ("code touching X"). → Path
+  globs only.
+- Editing docs in a project with no confirmed index `Class` column. → Run
+  audit Phase 0 first.
 
 ## Rationalizations
 
@@ -125,14 +239,25 @@ Date + SHA are **provenance only** (HEAD at review time), not a scoping key. Sta
 | "The grep found nothing, the feature's gone." | A grep miss is not proof of removal. Check git history; it may be renamed. |
 | "37 vs. ~40 is close, I'll just write the real number." | Counts have no canonical convention — hand it to the human. |
 | "The symbol/route/field exists, so the claim checks out." | Existence ≠ the claim. Verify the code path that *enacts* it (the validator/handler/call site), not just that the noun exists. |
-| "Every doc verified clean, so the docs are good." | Per-doc accuracy ≠ a healthy set. Duplication, missing docs, and cross-doc contradictions only surface at the corpus level (Phase 4). |
+| "Every doc verified clean, so the docs are good." | Per-doc accuracy ≠ a healthy set. Duplication, missing docs, and cross-doc contradictions only surface at the corpus level (audit Phase 4). |
+| "Scan found zero hits, the exception is resolved." | A grep miss is not resolution — confirm via `git log -S` first; `[permanent]` exceptions are never removed on scan evidence. |
+| "It's a tiny doc edit, stamping without a verifier is fine." | The stamp *means* independently verified. No verifier, no stamp. |
+| "The docs feel incomplete, I'll add a doc for each gap." | Gaps are findings. A doc with no reader is debt, not coverage. |
 
 ## Common mistakes
 
 - Editing before classifying.
-- Spawning one subagent per point-in-time doc — batch them; they aren't claim-verified.
-- An unbounded first-run interview backlog — prioritize, defer the tail to a report.
+- Spawning one subagent per point-in-time doc — batch them; they aren't
+  claim-verified.
+- An unbounded first-run interview backlog — prioritize, defer the tail to a
+  report.
 - Auto-committing the audit — leave it uncommitted for human review.
-- Declaring done without adversarially verifying your own edits — your fixes are a prime hiding spot for confident-but-wrong claims (Phase 3).
-- Treating per-doc verification as the whole job — duplication, gaps, cross-doc contradictions, and a missing index are set-level defects invisible to a per-doc pass (Phase 4).
-- Verifying the noun, not the verb — confirming a symbol exists instead of confirming the code does what the doc claims about it.
+- Declaring done without adversarially verifying your own edits — your fixes
+  are a prime hiding spot for confident-but-wrong claims (audit Phase 3).
+- Treating per-doc verification as the whole job — duplication, gaps,
+  cross-doc contradictions, and a missing index are set-level defects
+  invisible to a per-doc pass (audit Phase 4).
+- Verifying the noun, not the verb — confirming a symbol exists instead of
+  confirming the code does what the doc claims about it.
+- Treating `stale` output as proof of cleanliness — it is triage; soundness
+  comes from full audits.
