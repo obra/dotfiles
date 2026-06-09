@@ -7,10 +7,14 @@ clause, and the pragmatism law all bind here. The template is
 ## Bootstrap (no dictionary exists)
 
 1. Confirm the reader exists: who needs this dictionary (agents working the
-   repo count)? No reader → stop.
+   repo count)? No reader → stop. Record the named reader at the top of the
+   interview batch so the human approves the premise, not just the entries.
 2. Mine candidates — three sweeps, breadth-first, no entry-writing yet:
    - **Names:** every component/service/tool/library with a project-specific
      name (directory names, service registries, CLI commands, README nouns).
+     Mine them all, but one entry per binary/package is an anti-pattern —
+     keep only the Names readers actually conflate or misspell; an existing
+     inventory table (README code map) stays the owner of the rest.
    - **Confusable pairs:** terms that appear near each other and could be
      conflated (the *box*/*runner* class). These are the highest-value
      entries.
@@ -18,7 +22,8 @@ clause, and the pragmatism law all bind here. The template is
      repeats across docs/code. Skip industry-standard vocabulary.
 3. Interview, bounded: present the candidate list with proposed 1–2 sentence
    definitions in one batch. The human approves/edits/cuts. Load-bearing and
-   ambiguous terms only — a dictionary you can read in one sitting.
+   ambiguous terms only — a dictionary you can read in one sitting; aim for
+   under ~25 entries on a first pass.
 4. Instantiate `templates/DICTIONARY-template.md` at `docs/DICTIONARY.md`
    (create `docs/` if absent), fill approved entries, add an index row
    (Class: evergreen), and stamp it
