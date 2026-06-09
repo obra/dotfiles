@@ -348,6 +348,61 @@ class TestStale(unittest.TestCase):
             self.stamp_api(tmp, deferred=2)
             self.assertEqual(docmaint.run_stale(tmp), [("docs/api.md", "deferred:2")])
 
+    def test_no_index_cli_exits_2(self):
+        with tempfile.TemporaryDirectory() as td:
+            tmp = pathlib.Path(td)
+            make_repo(tmp, {"README.md": "no index here\n"})
+            proc = subprocess.run(
+                [sys.executable, str(HERE / "docmaint"), "stale", "--root", str(tmp)],
+                capture_output=True, text=True,
+            )
+        self.assertEqual(proc.returncode, 2)
+        self.assertIn("no doc index", proc.stderr)
+        self.assertNotIn("Traceback", proc.stderr)
+
+    def test_missing_doc_reported(self):
+        with tempfile.TemporaryDirectory() as td:
+            tmp = self.make(td)
+            (tmp / "docs/api.md").unlink()
+            rows = docmaint.run_stale(tmp)
+            self.assertEqual(rows, [("docs/api.md", "missing")])
+
+    def test_unresolvable_stamp_sha_reported(self):
+        with tempfile.TemporaryDirectory() as td:
+            tmp = self.make(td)
+            p = tmp / "docs/api.md"
+            p.write_text(docmaint.stamp_text(p.read_text(), "2026-06-09",
+                                             "deadbeef0", deferred=0))
+            rows = docmaint.run_stale(tmp)
+            self.assertEqual(rows, [("docs/api.md", "stamp-sha-unknown")])
+
+    def test_class_matching_is_case_insensitive(self):
+        with tempfile.TemporaryDirectory() as td:
+            tmp = pathlib.Path(td)
+            make_repo(tmp, {
+                "docs/README.md": INDEX_BLOCK.replace("| evergreen |", "| Evergreen |"),
+                "docs/api.md": "# API\n",
+                "docs/old-design.md": "# Old\n",
+                "internal/server/main.go": "package main\n",
+            })
+            rows = docmaint.run_stale(tmp)
+            self.assertEqual(rows, [("docs/api.md", "unstamped")])
+
+    def test_indented_row_parsed_and_malformed_row_warns(self):
+        text = INDEX_BLOCK.replace(
+            "| `docs/api.md` | API reference | evergreen | `internal/server/**` |",
+            "  | `docs/api.md` | API reference | evergreen | `internal/server/**` |",
+        ).replace(
+            "| `docs/old-design.md` | old design | point-in-time | — |",
+            "| `docs/old-design.md` | old design | point-in-time | — | extra |",
+        )
+        import io, contextlib
+        buf = io.StringIO()
+        with contextlib.redirect_stderr(buf):
+            rows = docmaint.parse_index(text)
+        self.assertEqual([(r.doc, r.klass) for r in rows], [("docs/api.md", "evergreen")])
+        self.assertIn("malformed index row", buf.getvalue())
+
 
 if __name__ == "__main__":
     result = unittest.main(exit=False).result

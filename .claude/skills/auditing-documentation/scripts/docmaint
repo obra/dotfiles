@@ -334,20 +334,27 @@ def find_index(root: Path) -> Path | None:
 def parse_index(text: str) -> list[IndexRow]:
     rows = []
     inside = False
-    for line in text.splitlines():
-        if line.strip() == INDEX_BEGIN:
+    for raw in text.splitlines():
+        line = raw.strip()
+        if line == INDEX_BEGIN:
             inside = True
             continue
-        if line.strip() == INDEX_END:
+        if line == INDEX_END:
             break
         if not inside or not line.startswith("|"):
             continue
-        cells = [c.strip() for c in line.strip().strip("|").split("|")]
-        if len(cells) != 4 or cells[0] in ("Doc", "---", "—") or set(cells[0]) == {"-"}:
+        cells = [c.strip() for c in line.strip("|").split("|")]
+        if cells and (cells[0] in ("Doc", "—") or set(cells[0]) <= {"-", ":"}):
+            continue  # header or separator row
+        if len(cells) != 4:
+            print(f"stale: malformed index row (expected 4 cells, got {len(cells)}): "
+                  f"{line}", file=sys.stderr)
             continue
         doc = cells[0].strip("`")
-        klass = cells[2]
+        klass = cells[2].lower()
         owns = [] if cells[3] in ("—", "-", "") else [g.strip("` ") for g in cells[3].split(",")]
+        # owns == [] means the doc owns no code surface: it can be missing/
+        # unstamped/deferred but never 'changed'.
         rows.append(IndexRow(doc, klass, owns))
     return rows
 
@@ -355,8 +362,9 @@ def parse_index(text: str) -> list[IndexRow]:
 def run_stale(root: Path) -> list[tuple[str, str]]:
     index_path = find_index(root)
     if index_path is None:
-        raise SystemExit("stale: no doc index found (docs/README.md or docs/INDEX.md "
-                         f"with {INDEX_BEGIN})")
+        raise FileNotFoundError(
+            f"no doc index found (docs/README.md or docs/INDEX.md with {INDEX_BEGIN})"
+        )
     out = []
     diff_cache: dict[str, list[str]] = {}
     for row in parse_index(index_path.read_text(encoding="utf-8")):
@@ -391,7 +399,16 @@ def run_stale(root: Path) -> list[tuple[str, str]]:
 
 
 def cmd_stale(args: argparse.Namespace) -> int:
-    for doc, reason in run_stale(args.root.resolve()):
+    root = args.root.resolve()
+    try:
+        rows = run_stale(root)
+    except FileNotFoundError as e:
+        print(f"stale: {e}", file=sys.stderr)
+        return 2
+    except subprocess.CalledProcessError as e:
+        print(f"stale: git failed under {root}: {e.stderr.strip() or e}", file=sys.stderr)
+        return 2
+    for doc, reason in rows:
         print(f"{doc}\t{reason}")
     return 0
 
