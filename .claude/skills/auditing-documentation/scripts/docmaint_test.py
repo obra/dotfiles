@@ -177,6 +177,44 @@ class TestScan(unittest.TestCase):
         result = self.scan({"docs/guide.md": "fine text\n"})
         self.assertEqual(result.candidates, ["executor"])  # executor yes, instance no
 
+    def test_duplicate_term_exceptions_have_independent_liveness(self):
+        # Same term in two exception rows: the live row must not mask the
+        # dead one, and the dead one is reported exactly once.
+        dict_with_dupes = FIXTURE_DICT.replace(
+            "- `executor` — `internal/sched/**`; dictionary says *runner*; rename pending (#123). [temporary]",
+            "- `executor` — `internal/sched/**`; dictionary says *runner*; rename pending (#123). [temporary]\n"
+            "- `executor` — `internal/web/**`; same rename, web side (#123). [temporary]",
+        )
+        with tempfile.TemporaryDirectory() as td:
+            tmp = pathlib.Path(td)
+            make_repo(tmp, {
+                "docs/DICTIONARY.md": dict_with_dupes,
+                "internal/web/exec.go": "executor := New()\n",   # live under web glob
+                "internal/sched/clean.go": "package sched\n",    # dead under sched glob
+            })
+            result = docmaint.run_scan(tmp)
+        self.assertEqual(result.candidates, ["executor"])
+
+    def test_missing_dictionary_exits_2_with_message(self):
+        with tempfile.TemporaryDirectory() as td:
+            tmp = pathlib.Path(td)
+            make_repo(tmp, {"README.md": "hi\n"})
+            proc = subprocess.run(
+                [sys.executable, str(HERE / "docmaint"), "scan", "--root", str(tmp)],
+                capture_output=True, text=True,
+            )
+        self.assertEqual(proc.returncode, 2)
+        self.assertIn("no dictionary", proc.stderr.lower())
+
+    def test_non_git_root_exits_2_with_message(self):
+        with tempfile.TemporaryDirectory() as td:
+            proc = subprocess.run(
+                [sys.executable, str(HERE / "docmaint"), "scan", "--root", td],
+                capture_output=True, text=True,
+            )
+        self.assertEqual(proc.returncode, 2)
+        self.assertNotIn("Traceback", proc.stderr)
+
 
 if __name__ == "__main__":
     result = unittest.main(exit=False).result

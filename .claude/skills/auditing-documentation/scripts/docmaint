@@ -169,7 +169,7 @@ def run_scan(root: Path) -> ScanResult:
     result = ScanResult()
 
     # (regex, canonical/replacement, synonym-or-None). syn None = Name case-variant check.
-    checks: list[tuple[re.Pattern, str, str]] = []
+    checks: list[tuple[re.Pattern, str, str | None]] = []
     for e in d.entries:
         for syn, manual in e.synonyms:
             if manual:
@@ -179,12 +179,16 @@ def run_scan(root: Path) -> ScanResult:
             # Case-variant check: case-insensitive hit whose exact text != canonical.
             checks.append((_word_re(e.name, ignorecase=True), e.name, None))
 
-    exc_hits = {ex.term: 0 for ex in d.exceptions}
+    exc_res = [_word_re(ex.term, ignorecase=True) for ex in d.exceptions]
+    exc_hits = [0] * len(d.exceptions)
 
     for rel in _sweepable_files(root):
         text = _read_text(root, rel)
         if text is None:
             continue
+        # File↔glob membership is per-path; compute once, not per line.
+        local_exc = [i for i, ex in enumerate(d.exceptions)
+                     if any(glob_match(rel, g) for g in ex.globs)]
         for lineno, line in enumerate(text.splitlines(), 1):
             for pattern, canonical, syn in checks:
                 for m in pattern.finditer(line):
@@ -193,28 +197,35 @@ def run_scan(root: Path) -> ScanResult:
                         continue  # Name in canonical case: clean
                     term_key = syn if syn is not None else found
                     covered = any(
-                        ex.term.lower() == term_key.lower()
-                        and any(glob_match(rel, g) for g in ex.globs)
-                        for ex in d.exceptions
+                        d.exceptions[i].term.lower() == term_key.lower()
+                        for i in local_exc
                     )
                     if covered:
                         continue
                     result.violations.append(Violation(rel, lineno, found, canonical))
-            # Exception liveness: count term presence inside its own globs.
-            for ex in d.exceptions:
-                if any(glob_match(rel, g) for g in ex.globs):
-                    if _word_re(ex.term, ignorecase=True).search(line):
-                        exc_hits[ex.term] += 1
+            # Exception liveness: count term presence inside its own globs, per row.
+            for i in local_exc:
+                if exc_res[i].search(line):
+                    exc_hits[i] += 1
 
-    for ex in d.exceptions:
-        if ex.status == "temporary" and exc_hits[ex.term] == 0:
+    seen = set()
+    for i, ex in enumerate(d.exceptions):
+        if ex.status == "temporary" and exc_hits[i] == 0 and ex.term not in seen:
+            seen.add(ex.term)
             result.candidates.append(ex.term)
     return result
 
 
 def cmd_scan(args: argparse.Namespace) -> int:
     root = args.root.resolve()
-    result = run_scan(root)
+    try:
+        result = run_scan(root)
+    except FileNotFoundError:
+        print(f"scan: no dictionary at {root / DICT_RELPATH}", file=sys.stderr)
+        return 2
+    except subprocess.CalledProcessError as e:
+        print(f"scan: git failed under {root}: {e.stderr.strip() or e}", file=sys.stderr)
+        return 2
     lines = [
         f"{v.path}:{v.lineno}: '{v.found}' -> use '{v.replacement}'"
         for v in result.violations
