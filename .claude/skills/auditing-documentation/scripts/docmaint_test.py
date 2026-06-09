@@ -282,6 +282,73 @@ class TestStamp(unittest.TestCase):
         self.assertNotIn("Traceback", proc.stderr)
 
 
+INDEX_BLOCK = """\
+# Docs
+
+<!-- doc-index:begin -->
+| Doc | What | Class | Owns |
+| --- | --- | --- | --- |
+| `docs/api.md` | API reference | evergreen | `internal/server/**` |
+| `docs/old-design.md` | old design | point-in-time | — |
+<!-- doc-index:end -->
+"""
+
+
+class TestStale(unittest.TestCase):
+    def make(self, td: str) -> pathlib.Path:
+        tmp = pathlib.Path(td)
+        make_repo(tmp, {
+            "docs/README.md": INDEX_BLOCK,
+            "docs/api.md": "# API\n",
+            "docs/old-design.md": "# Old\n",
+            "internal/server/main.go": "package main\n",
+        })
+        return tmp
+
+    def stamp_api(self, tmp: pathlib.Path, deferred: int = 0):
+        sha = subprocess.run(["git", "-C", str(tmp), "rev-parse", "--short", "HEAD"],
+                             capture_output=True, text=True, check=True).stdout.strip()
+        p = tmp / "docs/api.md"
+        p.write_text(docmaint.stamp_text(p.read_text(), "2026-06-09", sha, deferred))
+        subprocess.run(["git", "-C", str(tmp), "commit", "-aqm", "stamp"], check=True)
+
+    def test_unstamped_evergreen_reported_pointintime_skipped(self):
+        with tempfile.TemporaryDirectory() as td:
+            tmp = self.make(td)
+            rows = docmaint.run_stale(tmp)
+            self.assertEqual(rows, [("docs/api.md", "unstamped")])
+
+    def test_clean_doc_not_reported(self):
+        with tempfile.TemporaryDirectory() as td:
+            tmp = self.make(td)
+            self.stamp_api(tmp)
+            self.assertEqual(docmaint.run_stale(tmp), [])
+
+    def test_owned_change_reported(self):
+        with tempfile.TemporaryDirectory() as td:
+            tmp = self.make(td)
+            self.stamp_api(tmp)
+            (tmp / "internal/server/main.go").write_text("package main // changed\n")
+            subprocess.run(["git", "-C", str(tmp), "commit", "-aqm", "change"], check=True)
+            rows = docmaint.run_stale(tmp)
+            self.assertEqual(rows, [("docs/api.md", "changed: internal/server/main.go")])
+
+    def test_unowned_change_not_reported(self):
+        with tempfile.TemporaryDirectory() as td:
+            tmp = self.make(td)
+            self.stamp_api(tmp)
+            (tmp / "README.md").write_text("top\n")
+            subprocess.run(["git", "-C", str(tmp), "add", "-A"], check=True)
+            subprocess.run(["git", "-C", str(tmp), "commit", "-qm", "unrelated"], check=True)
+            self.assertEqual(docmaint.run_stale(tmp), [])
+
+    def test_deferred_claims_always_on_worklist(self):
+        with tempfile.TemporaryDirectory() as td:
+            tmp = self.make(td)
+            self.stamp_api(tmp, deferred=2)
+            self.assertEqual(docmaint.run_stale(tmp), [("docs/api.md", "deferred:2")])
+
+
 if __name__ == "__main__":
     result = unittest.main(exit=False).result
     failed = len(result.failures) + len(result.errors)

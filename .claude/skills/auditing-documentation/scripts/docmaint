@@ -318,8 +318,82 @@ def cmd_stamp(args: argparse.Namespace) -> int:
         return 2
 
 
+class IndexRow:
+    def __init__(self, doc: str, klass: str, owns: list[str]):
+        self.doc, self.klass, self.owns = doc, klass, owns
+
+
+def find_index(root: Path) -> Path | None:
+    for rel in ("docs/README.md", "docs/INDEX.md"):
+        p = root / rel
+        if p.exists() and INDEX_BEGIN in p.read_text(encoding="utf-8"):
+            return p
+    return None
+
+
+def parse_index(text: str) -> list[IndexRow]:
+    rows = []
+    inside = False
+    for line in text.splitlines():
+        if line.strip() == INDEX_BEGIN:
+            inside = True
+            continue
+        if line.strip() == INDEX_END:
+            break
+        if not inside or not line.startswith("|"):
+            continue
+        cells = [c.strip() for c in line.strip().strip("|").split("|")]
+        if len(cells) != 4 or cells[0] in ("Doc", "---", "—") or set(cells[0]) == {"-"}:
+            continue
+        doc = cells[0].strip("`")
+        klass = cells[2]
+        owns = [] if cells[3] in ("—", "-", "") else [g.strip("` ") for g in cells[3].split(",")]
+        rows.append(IndexRow(doc, klass, owns))
+    return rows
+
+
+def run_stale(root: Path) -> list[tuple[str, str]]:
+    index_path = find_index(root)
+    if index_path is None:
+        raise SystemExit("stale: no doc index found (docs/README.md or docs/INDEX.md "
+                         f"with {INDEX_BEGIN})")
+    out = []
+    diff_cache: dict[str, list[str]] = {}
+    for row in parse_index(index_path.read_text(encoding="utf-8")):
+        if row.klass != "evergreen":
+            continue
+        try:
+            text = (root / row.doc).read_text(encoding="utf-8")
+        except OSError:
+            out.append((row.doc, "missing"))
+            continue
+        stamp = parse_stamp(text)
+        if stamp is None:
+            out.append((row.doc, "unstamped"))
+            continue
+        if stamp.deferred:
+            out.append((row.doc, f"deferred:{stamp.deferred}"))
+            continue
+        if stamp.sha not in diff_cache:
+            try:
+                diff_cache[stamp.sha] = git(
+                    root, "diff", "--name-only", "-M", f"{stamp.sha}..HEAD"
+                ).splitlines()
+            except subprocess.CalledProcessError:
+                out.append((row.doc, "stamp-sha-unknown"))
+                continue
+        changed = [p for p in diff_cache[stamp.sha]
+                   if any(glob_match(p, g) for g in row.owns)]
+        if changed:
+            shown = ",".join(changed[:3]) + (f" (+{len(changed)-3} more)" if len(changed) > 3 else "")
+            out.append((row.doc, f"changed: {shown}"))
+    return out
+
+
 def cmd_stale(args: argparse.Namespace) -> int:
-    raise NotImplementedError
+    for doc, reason in run_stale(args.root.resolve()):
+        print(f"{doc}\t{reason}")
+    return 0
 
 
 def build_parser() -> argparse.ArgumentParser:
