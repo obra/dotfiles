@@ -38,3 +38,4 @@ bin/debug-mcp-wrapper.sh
 # scratch trees that tasks have dumped into the repo working dir (never config)
 artifacts/
 node_modules/
+__pycache__/

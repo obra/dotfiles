@@ -15,7 +15,10 @@ edit rows, never the sentinels.
 <!-- doc-index:begin -->
 | Doc | What | Class | Owns |
 | --- | --- | --- | --- |
-| `docs/DICTIONARY.md` | project dictionary (normative terminology) | evergreen | `docs/**` |
+| `docs/DICTIONARY.md` | project dictionary (normative terminology) | evergreen | — |
 <!-- doc-index:end -->
 
-<!-- Point-in-time rows: Class `point-in-time`, Owns `—` (they own no code surface). -->
+<!-- Owns `—` = the doc owns no code surface, so `stale` never flags it. Right
+for point-in-time rows and for the dictionary (its freshness comes from `scan`
+and full audits). An evergreen doc's Owns lists the surfaces whose facts it
+owns, scoped tightly — a `docs/**`-style glob just makes the doc flag itself. -->

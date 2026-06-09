@@ -3,5 +3,4 @@
 set -u
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
 SKILL="$HERE/../.claude/skills/maintaining-documentation"
-[ -d "$SKILL" ] || SKILL="$HERE/../.claude/skills/auditing-documentation"
 python3 "$SKILL/scripts/docmaint_test.py" 2>&1
