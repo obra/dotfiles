@@ -34,6 +34,74 @@ def git(root: Path, *args: str) -> str:
     ).stdout
 
 
+class Entry:
+    def __init__(self, name: str, section: str):
+        self.name = name
+        self.section = section          # "Terms" or "Names"
+        self.synonyms: list[tuple[str, bool]] = []   # (text, is_manual)
+
+
+class Exception_:
+    def __init__(self, term: str, globs: list[str], status: str):
+        self.term = term
+        self.globs = globs
+        self.status = status            # "temporary" or "permanent"
+
+
+class Dictionary:
+    def __init__(self):
+        self.entries: list[Entry] = []
+        self.exceptions: list[Exception_] = []
+
+
+USE_INSTEAD_RE = re.compile(r"^Use instead of:\s*(.+?)\s*$")
+EXCEPTION_RE = re.compile(
+    r"^- `(?P<term>[^`]+)` — (?P<globs>`[^`]+`(?:, `[^`]+`)*);"
+    r".*\[(?P<status>temporary|permanent)\]\s*$"
+)
+
+
+def _parse_synonyms(raw: str) -> list[tuple[str, bool]]:
+    # Strip one trailing parenthetical (the human-readable reason), then a period.
+    raw = re.sub(r"\s*\([^()]*\)\s*\.?\s*$", "", raw).rstrip(". ")
+    out = []
+    for piece in raw.split(","):
+        piece = piece.strip()
+        if not piece:
+            continue
+        manual = piece.endswith("[manual]")
+        if manual:
+            piece = piece[: -len("[manual]")].strip()
+        out.append((piece, manual))
+    return out
+
+
+def parse_dictionary(text: str) -> Dictionary:
+    d = Dictionary()
+    section = None
+    entry = None
+    for line in text.splitlines():
+        if line.startswith("## "):
+            section = line[3:].strip()
+            entry = None
+            continue
+        if line.startswith("### ") and section in ("Terms", "Names"):
+            entry = Entry(line[4:].strip(), section)
+            d.entries.append(entry)
+            continue
+        if section == "Exceptions":
+            m = EXCEPTION_RE.match(line)
+            if m:
+                globs = [g.strip("` ") for g in m.group("globs").split(",")]
+                d.exceptions.append(Exception_(m.group("term"), globs, m.group("status")))
+            continue
+        if entry is not None:
+            m = USE_INSTEAD_RE.match(line)
+            if m:
+                entry.synonyms = _parse_synonyms(m.group(1))
+    return d
+
+
 def cmd_scan(args: argparse.Namespace) -> int:
     raise NotImplementedError
 
