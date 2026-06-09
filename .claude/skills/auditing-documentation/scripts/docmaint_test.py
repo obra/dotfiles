@@ -85,6 +85,12 @@ class TestParseDictionary(unittest.TestCase):
         d = docmaint.parse_dictionary(text)
         self.assertEqual(d.entries[0].synonyms, [])
 
+    def test_exactly_one_terminal_period_stripped(self):
+        # Only ONE sentence-ending period comes off; an abbreviation period
+        # immediately before it survives. (Grammar: optional trailing period.)
+        d = docmaint.parse_dictionary("## Terms\n### usa\nUse instead of: eagle, U.S..\n")
+        self.assertEqual(d.entries[0].synonyms, [("eagle", False), ("U.S.", False)])
+
 
 if __name__ == "__main__":
     result = unittest.main(exit=False).result

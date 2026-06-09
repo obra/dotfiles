@@ -63,7 +63,7 @@ EXCEPTION_RE = re.compile(
 
 def _parse_synonyms(raw: str) -> list[tuple[str, bool]]:
     # Strip one trailing parenthetical (the human-readable reason), then a period.
-    raw = re.sub(r"\s*\([^()]*\)\s*\.?\s*$", "", raw).rstrip(". ")
+    raw = re.sub(r"\s*\([^()]*\)\s*\.?\s*$", "", raw).strip().removesuffix(".")
     out = []
     for piece in raw.split(","):
         piece = piece.strip()
