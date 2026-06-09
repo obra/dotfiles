@@ -268,7 +268,8 @@ def parse_stamp(text: str) -> Stamp | None:
 
 
 def _stamp_line(date: str, sha: str, deferred: int) -> str:
-    extra = f" ({deferred} claims deferred to review)" if deferred else ""
+    plural = "claim" if deferred == 1 else "claims"
+    extra = f" ({deferred} {plural} deferred to review)" if deferred else ""
     return f"_Last reviewed: {date} · commit `{sha}` · verified against code{extra}._"
 
 
@@ -276,8 +277,12 @@ def stamp_text(text: str, date: str, sha: str, deferred: int) -> str:
     line = _stamp_line(date, sha, deferred)
     if STAMP_SENTINEL in text:
         # Replace the existing block: sentinel line + the stamp line after it.
-        text = STAMP_LINE_RE.sub(line, text, count=1)
-        return text
+        new = STAMP_LINE_RE.sub(line, text, count=1)
+        if new == text and not STAMP_LINE_RE.search(text):
+            raise ValueError(
+                "stamp sentinel present but its line is unparseable — fix the block by hand"
+            )
+        return new
     body = text.rstrip("\n")
     if body.endswith("\n---") or body == "---":
         return body + f"\n{STAMP_SENTINEL}\n{line}\n"
@@ -286,24 +291,31 @@ def stamp_text(text: str, date: str, sha: str, deferred: int) -> str:
 
 def cmd_stamp(args: argparse.Namespace) -> int:
     root = args.root.resolve()
-    if args.set:
-        doc = root / args.set
-        sha = git(root, "rev-parse", "--short", "HEAD").strip()
-        today = datetime.date.today().isoformat()
-        doc.write_text(stamp_text(doc.read_text(encoding="utf-8"), today, sha,
-                                  args.deferred), encoding="utf-8")
-        print(f"stamped {args.set} @ {sha}"
-              + (f" ({args.deferred} deferred)" if args.deferred else ""))
+    try:
+        if args.set:
+            doc = root / args.set
+            sha = git(root, "rev-parse", "--short", "HEAD").strip()
+            today = datetime.date.today().isoformat()
+            doc.write_text(stamp_text(doc.read_text(encoding="utf-8"), today, sha,
+                                      args.deferred), encoding="utf-8")
+            print(f"stamped {args.set} @ {sha}"
+                  + (f" ({args.deferred} deferred)" if args.deferred else ""))
+            return 0
+        # default / --list: show every stamped markdown file
+        for rel in git(root, "ls-files", "*.md").splitlines():
+            text = _read_text(root, rel)
+            if text is None:
+                continue
+            stamp = parse_stamp(text)
+            if stamp:
+                print(f"{rel}\t{stamp.date}\t{stamp.sha}\tdeferred={stamp.deferred}")
         return 0
-    # default / --list: show every stamped markdown file
-    for rel in git(root, "ls-files", "*.md").splitlines():
-        text = _read_text(root, rel)
-        if text is None:
-            continue
-        stamp = parse_stamp(text)
-        if stamp:
-            print(f"{rel}\t{stamp.date}\t{stamp.sha}\tdeferred={stamp.deferred}")
-    return 0
+    except (OSError, ValueError) as e:
+        print(f"stamp: {e}", file=sys.stderr)
+        return 2
+    except subprocess.CalledProcessError as e:
+        print(f"stamp: git failed under {root}: {e.stderr.strip() or e}", file=sys.stderr)
+        return 2
 
 
 def cmd_stale(args: argparse.Namespace) -> int:

@@ -250,6 +250,37 @@ class TestStamp(unittest.TestCase):
     def test_parse_stamp_absent(self):
         self.assertIsNone(docmaint.parse_stamp("# D\nno stamp here\n"))
 
+    def test_sentinel_without_parseable_line_raises(self):
+        broken = f"# Doc\n\n---\n{docmaint.STAMP_SENTINEL}\n_Last reviewed: YYYY-MM-DD (placeholder)._\n"
+        with self.assertRaises(ValueError):
+            docmaint.stamp_text(broken, "2026-06-09", "abc1234", deferred=0)
+
+    def test_singular_claim_grammar(self):
+        out = docmaint.stamp_text("# D\n", "2026-06-09", "abc1234", deferred=1)
+        self.assertIn("(1 claim deferred to review)", out)
+        self.assertEqual(docmaint.parse_stamp(out).deferred, 1)
+
+    def test_stamp_set_missing_doc_exits_2(self):
+        with tempfile.TemporaryDirectory() as td:
+            tmp = pathlib.Path(td)
+            make_repo(tmp, {"README.md": "hi\n"})
+            proc = subprocess.run(
+                [sys.executable, str(HERE / "docmaint"), "stamp",
+                 "--root", str(tmp), "--set", "docs/nope.md"],
+                capture_output=True, text=True,
+            )
+        self.assertEqual(proc.returncode, 2)
+        self.assertNotIn("Traceback", proc.stderr)
+
+    def test_stamp_list_non_git_root_exits_2(self):
+        with tempfile.TemporaryDirectory() as td:
+            proc = subprocess.run(
+                [sys.executable, str(HERE / "docmaint"), "stamp", "--root", td, "--list"],
+                capture_output=True, text=True,
+            )
+        self.assertEqual(proc.returncode, 2)
+        self.assertNotIn("Traceback", proc.stderr)
+
 
 if __name__ == "__main__":
     result = unittest.main(exit=False).result
