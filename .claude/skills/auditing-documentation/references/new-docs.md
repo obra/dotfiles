@@ -20,8 +20,8 @@ Law lives in the hub. First exit wins:
    - Add the index row: one-liner for readers, Class `evergreen`, `Owns`
      globs for the surfaces whose facts it owns (machine-readable —
      `docmaint stale` will diff them).
-   - Run `scripts/docmaint scan`; fix what the new doc introduced.
-   - Verify, then stamp: `scripts/docmaint stamp --set <doc>` (stamping
+   - Run `docmaint scan`; fix what the new doc introduced.
+   - Verify, then stamp: `docmaint stamp --set <doc>` (stamping
      precondition applies — an independent verifier re-checks before the
      stamp).
 4. **Don't duplicate.** If the fact already has a canonical owner, link to

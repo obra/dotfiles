@@ -41,7 +41,7 @@ existence) with a `file:line` or command-output citation. Tell them explicitly
 they are competing and that **padding or inflating findings disqualifies
 them** — that framing is what keeps the pass honest. Fix every confirmed
 finding. Only then **stamp the last-reviewed marker** on the verified
-evergreen docs (use `scripts/docmaint stamp --set <doc> [--deferred N]` — it
+evergreen docs (use `docmaint stamp --set <doc> [--deferred N]` — it
 is idempotent and records deferred-claim counts), and leave everything
 **uncommitted** for human review.
 
@@ -66,7 +66,7 @@ canonical-owner scheme):
   `references/new-docs.md`).
 - **Cross-doc contradictions** — the same fact stated two different ways in
   two docs (one is wrong). Reconcile at the canonical owner.
-- **Terminology** — run `scripts/docmaint scan` against the repo. Apply the
+- **Terminology** — run `docmaint scan` against the repo. Apply the
   rubric's dictionary clause to violations in evergreen prose; everything
   else (code identifiers, UI strings) is a finding → interview (rename / add
   entry / add exception). Zero-match `[temporary]` exceptions are removal
@@ -83,7 +83,7 @@ class Phases 1–3 cannot.
 
 ## Stamping mechanics
 
-Stamp with `scripts/docmaint stamp --set <doc> [--deferred N]` — idempotent,
+Stamp with `docmaint stamp --set <doc> [--deferred N]` — idempotent,
 reuses a trailing `---`, never stacks duplicates, fails loudly on a corrupted
 stamp block. Record deferred counts honestly: a deferred claim keeps the doc
 on the incremental worklist (hub: stamp contract). Stamp only docs you

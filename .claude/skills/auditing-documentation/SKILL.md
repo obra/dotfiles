@@ -151,8 +151,14 @@ stamps. Never a third metadata file.
   Columns: Doc | What | Class | Owns. `Class` is the persisted
   classify-and-confirm output; `Owns` is machine-readable path globs (what
   `docmaint stale` diffs). Template: `templates/INDEX-template.md`.
-- **`scripts/docmaint`** (`scan | stamp | stale`, `--help` for usage) does
-  the mechanical work. It never edits docs; agents do, under the rubric.
+- **`docmaint`** (`scan | stamp | stale`, `--help` for usage) does the
+  mechanical work. It never edits docs; agents do, under the rubric. It lives
+  in **this skill's** `scripts/` directory — not in the target repo — so
+  invoke it by absolute path (e.g.
+  `~/.claude/skills/maintaining-documentation/scripts/docmaint`), and pass
+  `--root <target-repo>` unless your cwd is already the target repo root
+  (`--root` defaults to cwd). Flow files write bare `docmaint <subcommand>`;
+  this resolution rule applies everywhere.
 
 ## Stamp contract
 
@@ -174,7 +180,9 @@ terminology never depends on stamps (`docmaint scan` full-sweeps every run).
 verification of the applied edits — full audits use two or more competing
 verifiers (Phase 3); diff- or worklist-bounded flows use at least one
 independent verifier. Don't stamp point-in-time docs. Stamp only what you
-verified.
+verified — and any evergreen claim you could *not* verify this pass,
+including claims whose ground truth lives outside the repo, counts toward
+`--deferred N`. Never let an unverified claim ride under a clean stamp.
 
 ## Pragmatism law
 
@@ -205,12 +213,14 @@ verified.
 - Marking a claim "matches" **without a citation**. → Cite it or don't claim
   it.
 - About to **finish without a second adversarial pass over your own edits**.
-  → Run the competing verify pass (audit Phase 3) first; fix what it finds.
+  → In a full audit, run the competing verify pass (audit Phase 3) first; in
+  bounded flows, the one-verifier stamping precondition applies. Fix what it
+  finds.
 - Marking a claim "matches" because the **symbol exists**, without checking
   the code *does* what's claimed about it. → Verify the verb, not the noun.
 - Audited each doc, never looked at the **set** (duplication, gaps,
   contradictions, index). → Per-doc passes are blind to set-level defects;
-  run the corpus review (audit Phase 4).
+  run the corpus review (audit Phase 4 — applies to the full-audit flow).
 - About to remove a `[permanent]` exception, or a `[temporary]` one on scan
   evidence alone. → Permanent: never. Temporary: confirm via git history
   first (a grep miss is not resolution).

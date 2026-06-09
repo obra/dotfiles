@@ -22,8 +22,8 @@ clause, and the pragmatism law all bind here. The template is
 4. Instantiate `templates/DICTIONARY-template.md` at `docs/DICTIONARY.md`
    (create `docs/` if absent), fill approved entries, add an index row
    (Class: evergreen), and stamp it
-   (`scripts/docmaint stamp --set docs/DICTIONARY.md`).
-5. Run `scripts/docmaint scan`. Triage per the hub's governance rules; expect
+   (`docmaint stamp --set docs/DICTIONARY.md`).
+5. Run `docmaint scan`. Triage per the hub's governance rules; expect
    a first wave of findings — that's the point. Leave fixes uncommitted for
    review.
 
@@ -51,6 +51,6 @@ clause, and the pragmatism law all bind here. The template is
 
 ## After any dictionary edit
 
-Re-run `scripts/docmaint scan` (the dictionary governs the whole corpus, so
+Re-run `docmaint scan` (the dictionary governs the whole corpus, so
 an edit can create or clear violations anywhere), restamp the dictionary, and
 leave everything uncommitted for human review.

@@ -24,9 +24,11 @@ an unconfirmed classification.
 4. New terms: if the change introduces a recurring term or renames a
    concept, route to references/dictionary.md (entry or exception — e.g. a
    rename in flight gets a `[temporary]` exception in the same change).
-5. Run `scripts/docmaint scan`; fix violations your change introduced.
+5. Run `docmaint scan`; fix violations your change introduced.
 6. Stamping precondition (hub law): at least one independent verifier
    subagent re-checks the applied doc edits with citations. Then
-   `scripts/docmaint stamp --set <doc>` for each verified doc.
-7. The doc edits join the change's commits. Commit messages use dictionary
-   terms — this is the only place commit-message conformance is enforced.
+   `docmaint stamp --set <doc>` for each verified doc.
+7. The doc edits join the change's commits. Write commit messages with
+   dictionary terms — `scan` does not check messages, so this manual
+   convention is the only commit-message hook there is; history is never
+   rewritten.
