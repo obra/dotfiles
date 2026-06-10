@@ -249,7 +249,9 @@ def cmd_scan(args: argparse.Namespace) -> int:
 
 STAMP_LINE_RE = re.compile(
     r"_Last reviewed: (?P<date>\d{4}-\d{2}-\d{2}) · commit `(?P<sha>[0-9a-f]+)` · "
-    r"verified against code(?: \((?P<deferred>\d+) claims? deferred to review\))?\._"
+    # Parenthetical is tolerant: deferred counts come only from the canonical
+    # "(N claims deferred to review)" form; any other note parses as deferred=0.
+    r"verified against code(?: \((?:(?P<deferred>\d+) claims? deferred to review|.*)\))?\._"
 )
 
 

@@ -247,6 +247,24 @@ class TestStamp(unittest.TestCase):
         self.assertEqual((stamp.date, stamp.sha, stamp.deferred),
                          ("2026-06-09", "abc1234", 2))
 
+
+    def test_freeform_parenthetical_parses_as_deferred_zero(self):
+        # Agents embellish stamps with verification notes; the parser must
+        # tolerate any parenthetical and only read deferred counts from the
+        # canonical form.
+        line = ("# D\n\n---\n<!-- doc-audit:last-reviewed -->\n"
+                "_Last reviewed: 2026-06-09 · commit `feb2561` · verified "
+                "against code (credbroker run/CLI + socket 0600 against "
+                "`internal/credbroker/server.go`; SSM params)._\n")
+        stamp = docmaint.parse_stamp(line)
+        self.assertIsNotNone(stamp)
+        self.assertEqual((stamp.date, stamp.sha, stamp.deferred),
+                         ("2026-06-09", "feb2561", 0))
+
+    def test_canonical_deferred_still_parsed_with_freeform_tolerance(self):
+        out = docmaint.stamp_text("# D\n", "2026-06-09", "abc1234", deferred=2)
+        self.assertEqual(docmaint.parse_stamp(out).deferred, 2)
+
     def test_parse_stamp_absent(self):
         self.assertIsNone(docmaint.parse_stamp("# D\nno stamp here\n"))
 
