@@ -8,6 +8,7 @@ bin/flatten.js
 bin/git-worktree-llm
 bin/homedir-sync
 bin/idb
+bin/lock-stray-zshrc
 .config/karabiner/karabiner.json
 .config/ccstatusline/settings.json
 .config/mise/config.toml

@@ -1,0 +1,110 @@
+#!/bin/sh
+# lock-stray-zshrc — hold ~/.zshrc immutable so editors that don't know about z4h
+# can't clobber shell config.
+#
+# This setup runs zsh4humans with ZDOTDIR=~/.config/zsh (set in ~/.zshenv), so the
+# root ~/.zshrc is never sourced. Installers and editors that blindly write it add
+# inert lines (e.g. PATH edits that silently do nothing). This locks a small
+# self-documenting placeholder there: blind writes then FAIL LOUDLY instead of
+# succeeding into the void, and anyone who looks sees where the real config lives.
+#
+# macOS: chflags uchg (no root needed). Linux: chattr +i (needs root).
+set -eu
+
+prog=$(basename -- "$0")
+target="$HOME/.zshrc"
+os=$(uname -s)
+
+usage() {
+  cat <<EOF
+usage: $prog [lock|unlock|status|help]
+
+  lock     (default) write a locked, ignored placeholder at $target
+  unlock   clear the immutable flag so you can edit or remove it
+  status   report LOCKED / UNLOCKED / ABSENT
+  help     this message
+
+The real zsh config lives in ~/.config/zsh/.zshrc (ZDOTDIR via z4h).
+EOF
+}
+
+write_placeholder() {
+  cat >"$target" <<'EOF'
+# This file is intentionally LOCKED and IGNORED.
+#
+# zsh reads ~/.config/zsh/.zshrc — ZDOTDIR is set by zsh4humans in ~/.zshenv, so
+# THIS file is never sourced. Anything written here does NOTHING. It is held
+# immutable on purpose, to stop installers and editors that don't know about z4h
+# from clobbering shell config.
+#
+# Put PATH / env / shell changes in ~/.config/zsh/.zshrc instead.
+# To edit or remove this file:  lock-stray-zshrc unlock
+EOF
+}
+
+set_immutable() {
+  case "$os" in
+    Darwin) chflags uchg "$target" ;;
+    Linux)
+      if ! chattr +i "$target" 2>/dev/null; then
+        printf '%s: cannot set immutable flag (needs root). Try: sudo %s lock\n' "$prog" "$prog" >&2
+        return 1
+      fi ;;
+    *) printf '%s: unsupported OS: %s\n' "$prog" "$os" >&2; return 1 ;;
+  esac
+}
+
+clear_immutable() {
+  case "$os" in
+    Darwin) chflags nouchg "$target" ;;
+    Linux)
+      if ! chattr -i "$target" 2>/dev/null; then
+        printf '%s: cannot clear immutable flag (needs root). Try: sudo %s unlock\n' "$prog" "$prog" >&2
+        return 1
+      fi ;;
+    *) printf '%s: unsupported OS: %s\n' "$prog" "$os" >&2; return 1 ;;
+  esac
+}
+
+is_immutable() {
+  case "$os" in
+    Darwin) stat -f '%Sf' "$target" 2>/dev/null | grep -q uchg ;;
+    Linux)  lsattr -d "$target" 2>/dev/null | awk '{print $1}' | grep -q i ;;
+    *) return 1 ;;
+  esac
+}
+
+do_lock() {
+  # Clear first so the rewrite succeeds whether or not it was already locked.
+  [ -e "$target" ] && is_immutable && clear_immutable
+  write_placeholder
+  set_immutable
+  printf 'locked %s (immutable; run "%s unlock" to edit)\n' "$target" "$prog"
+}
+
+do_unlock() {
+  if [ ! -e "$target" ]; then
+    printf '%s is absent — nothing to unlock\n' "$target"
+    return 0
+  fi
+  is_immutable && clear_immutable
+  printf 'unlocked %s\n' "$target"
+}
+
+do_status() {
+  if [ ! -e "$target" ]; then
+    printf 'ABSENT: %s\n' "$target"
+  elif is_immutable; then
+    printf 'LOCKED: %s\n' "$target"
+  else
+    printf 'UNLOCKED: %s\n' "$target"
+  fi
+}
+
+case "${1:-lock}" in
+  lock)            do_lock ;;
+  unlock)          do_unlock ;;
+  status)          do_status ;;
+  help|-h|--help)  usage ;;
+  *) printf '%s: unknown command: %s\n\n' "$prog" "$1" >&2; usage >&2; exit 2 ;;
+esac

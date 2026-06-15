@@ -28,3 +28,6 @@ the tool that needs it. Shell config wraps each tool so it runs under `fnox exec
 2. Clone the `homedir-manager` engine into `~/git/homedir-manager` and run `~/git/homedir-manager/bootstrap`.
 3. `homedir-manager install`
 4. Sign in to your password manager (`op signin` or `rbw unlock`).
+5. `lock-stray-zshrc` — hold the inert root `~/.zshrc` immutable so editors that don't know about
+   z4h can't clobber shell config (real config is `~/.config/zsh/.zshrc` via ZDOTDIR). macOS needs
+   no privileges; Linux needs `sudo lock-stray-zshrc`. Run `lock-stray-zshrc unlock` to undo.
