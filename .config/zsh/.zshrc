@@ -152,3 +152,6 @@ command -v rbenv >/dev/null && eval "$(rbenv init - --no-rehash zsh)"
 
 # Generic local bin
 [ -d "$HOME/.local/bin" ] && export PATH="$HOME/.local/bin:$PATH"
+
+# kimi-code CLI
+[ -d "$HOME/.kimi-code/bin" ] && export PATH="$HOME/.kimi-code/bin:$PATH"
