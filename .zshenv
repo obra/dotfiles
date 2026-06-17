@@ -16,7 +16,12 @@ if [ -n "${ZSH_VERSION-}" ]; then
 
   : ${ZDOTDIR:=$HOME/.config/zsh}   # keep zsh config under ~/.config/zsh, not $HOME
   setopt no_global_rcs
-  [[ -o no_interactive && -z "${Z4H_BOOTSTRAPPING-}" ]] && return
+  if [[ -o no_interactive && -z "${Z4H_BOOTSTRAPPING-}" ]]; then
+    # Non-interactive, non-login shells (e.g. `ssh host cmd`, mosh-server) skip
+    # ~/.zprofile, so add Homebrew to PATH here before z4h bails out.
+    [[ -d /opt/homebrew/bin ]] && export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"
+    return
+  fi
   setopt no_rcs
   unset Z4H_BOOTSTRAPPING
 fi
