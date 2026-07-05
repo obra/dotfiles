@@ -13,7 +13,7 @@ This skill allows you to view the user's screen. This skill is enabled because t
 ## Preconditions
 
 1. Only use this skill if memories are available in this rollout. This will manifest as an explicit mention of a ## Memories section in a Developer Message. If this section is not present, do not use this skill. If the user specifically tried to invoke this skill, you can mention it's disallowed because memories are disabled; otherwise, do not mention the existence of this skill (this skill is only supposed to be used when memories are enabled in Codex).
-2. Ensure Chronicle is running on the user's computer. You can check this by checking the pidfile at `$TMPDIR/codex_chronicle/chronicle-started.pid` is valid (i.e., exists and process is running). If the pidfile is invalid, do not use this skill. This applies EVEN IF there are seemingly-fresh videos in the screen_recording folder; the user may have just recently disabled Chronicle. Regardless, the takeaway is that recordings *cannot* be fresh when Chronicle isn't running; therefore, you shouldn't treat the videos as fresh. (Note: when communicating Chronicle status to the user, don't mention the pidfile. That's an implementation detail.)
+2. Ensure Chronicle is running on the user's computer. Read the PID from `$TMPDIR/codex_chronicle/chronicle-started.pid`, then run an escalated, read-only host process check and confirm the executable is `codex_chronicle`. Do not rely on sandboxed process checks. If Chronicle cannot be verified, do not use this skill. (When communicating Chronicle status to the user, do not mention the PID file; that is an implementation detail.)
 
 Ensure you follow preconditions before using the skill.
 
