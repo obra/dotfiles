@@ -12,6 +12,12 @@ if [ -n "${ZSH_VERSION-}" ]; then
   #
   #   export GOPATH=$HOME/go
   #
+  # gog CLI needs GOG_KEYRING_PASSWORD on every run to unlock its token keyring.
+  # Read it from a 0600 file so the secret never lives in this repo; the guard
+  # keeps it inert on hosts without that file. Set here (above the non-interactive
+  # return) so agents and cron get it too, not only interactive shells.
+  [ -r "$HOME/.config/gog/keyring-password" ] && export GOG_KEYRING_PASSWORD="$(cat "$HOME/.config/gog/keyring-password")"
+  #
   # Do not change anything else in this file.
 
   : ${ZDOTDIR:=$HOME/.config/zsh}   # keep zsh config under ~/.config/zsh, not $HOME
