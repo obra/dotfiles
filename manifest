@@ -39,6 +39,7 @@ bin/lock-stray-zshrc
 .claude/CLAUDE.md
 .claude/statusline-command.sh
 .claude/commands/par.md
+.claude/commands/story-loop.md
 .claude/skills/e2e-scenario-testing
 .claude/skills/maintaining-documentation
 .claude/skills/mcp-cli
