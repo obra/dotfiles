@@ -97,9 +97,12 @@ data_volume=$(diskutil info "$data_mount" |
 [ -n "$data_volume" ] || fail "could not identify the APFS Data volume at $data_mount"
 
 snapshots=()
+if ! discovered_snapshots=$(arq_snapshot_names); then
+  fail "could not list APFS snapshots on $data_volume"
+fi
 while IFS= read -r snapshot; do
   [ -n "$snapshot" ] && snapshots+=("$snapshot")
-done < <(arq_snapshot_names)
+done <<<"$discovered_snapshots"
 
 if [ "${#snapshots[@]}" -eq 0 ]; then
   printf 'No live Arq APFS snapshots found on %s (%s).\n' "$data_mount" "$data_volume"
@@ -169,7 +172,7 @@ for snapshot in "${snapshots[@]}"; do
     fail "could not delete snapshot $snapshot"
 done
 
-remaining=$(arq_snapshot_names)
+remaining=$(arq_snapshot_names) || fail "could not verify APFS snapshots on $data_volume"
 for snapshot in "${snapshots[@]}"; do
   if printf '%s\n' "$remaining" | grep -Fxq -- "$snapshot"; then
     fail "snapshot remains after deletion: $snapshot"

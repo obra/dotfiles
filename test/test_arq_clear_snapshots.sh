@@ -78,6 +78,13 @@ EOF
 if [ "${1:-}" = info ]; then
   printf '   Device Identifier:         disk3s5\n'
 elif [ "${1:-}" = apfs ] && [ "${2:-}" = listSnapshots ]; then
+  list_count=$(cat "$FAKE_STATE/list_count" 2>/dev/null || printf '0')
+  list_count=$((list_count + 1))
+  printf '%s\n' "$list_count" >"$FAKE_STATE/list_count"
+  case "${FAKE_LIST_MODE:-list}" in
+    fail) exit 1 ;;
+    fail_after_first) [ "$list_count" -gt 1 ] && exit 1 ;;
+  esac
   while IFS= read -r snapshot; do
     [ -n "$snapshot" ] && printf '    Name:        %s\n' "$snapshot"
   done <"$FAKE_STATE/snapshots"
@@ -130,6 +137,15 @@ run_cleaner --yes
 assert_eq 0 "$status" "no Arq snapshot is a successful no-op"
 assert_eq "" "$(cat "$FAKE_STATE/calls")" "no-op does not acquire sudo or change services"
 
+# Failure to inspect APFS state must never be reported as an empty snapshot set.
+new_case list_failure
+FAKE_LIST_MODE=fail
+export FAKE_LIST_MODE
+run_cleaner --yes
+unset FAKE_LIST_MODE
+assert_eq 1 "$status" "snapshot listing failure exits nonzero"
+assert_eq "" "$(cat "$FAKE_STATE/calls")" "listing failure makes no privileged or service changes"
+
 # Exact Arq-prefixed snapshots are removed while unrelated snapshots remain.
 new_case happy
 cat >"$FAKE_STATE/snapshots" <<'EOF'
@@ -175,6 +191,17 @@ printf '%s\n' "$services" >"$FAKE_STATE/services"
 FAKE_DELETE_MODE=noop run_cleaner --yes
 assert_eq 1 "$status" "remaining snapshot fails verification"
 assert_eq "$services" "$(sort "$FAKE_STATE/services")" "services are restored after verification error"
+
+# Failure to obtain the post-deletion listing must not be reported as verified success.
+new_case verification_list_failure
+printf 'com_haystacksoftware_arqagent_VOLUME_1\n' >"$FAKE_STATE/snapshots"
+printf '%s\n' "$services" >"$FAKE_STATE/services"
+FAKE_LIST_MODE=fail_after_first
+export FAKE_LIST_MODE
+run_cleaner --yes
+unset FAKE_LIST_MODE
+assert_eq 1 "$status" "verification listing failure exits nonzero"
+assert_eq "$services" "$(sort "$FAKE_STATE/services")" "services are restored after listing error"
 
 printf 'RESULT run=%s failed=%s\n' "$TESTS_RUN" "$TESTS_FAILED"
 [ "$TESTS_FAILED" -eq 0 ]
