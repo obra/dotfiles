@@ -1,0 +1,181 @@
+#!/bin/bash
+# Remove live APFS snapshots created by Arq while preserving every other snapshot.
+set -u -o pipefail
+
+prog=${0##*/}
+assume_yes=no
+snapshot_prefix=com_haystacksoftware_arqagent_
+data_mount=/System/Volumes/Data
+arq_mount_root='/Library/Application Support/ArqAgentAPFS.noindex'
+monitor_label=com.haystacksoftware.ArqMonitor
+agent_label=com.haystacksoftware.arqagent
+monitor_plist=/Library/LaunchAgents/com.haystacksoftware.ArqMonitor.plist
+agent_plist=/Library/LaunchDaemons/com.haystacksoftware.arqagent.plist
+
+monitor_stopped=no
+agent_stopped=no
+
+usage() {
+  cat <<EOF
+usage: $prog [--yes]
+
+Stop Arq's background services, delete only live Arq APFS snapshots, verify
+their removal, and restore every Arq service that was running.
+
+Pause Arq before running this command. Without --yes, the command lists the
+matching snapshots and asks you to confirm that Arq is paused.
+EOF
+}
+
+fail() {
+  printf '%s: %s\n' "$prog" "$*" >&2
+  exit 1
+}
+
+require_command() {
+  command -v "$1" >/dev/null 2>&1 || fail "required command not found: $1"
+}
+
+snapshot_names() {
+  diskutil apfs listSnapshots "$data_volume" |
+    awk '/^[[:space:]]*Name:/ {
+      sub(/^[[:space:]]*Name:[[:space:]]*/, "")
+      print
+    }'
+}
+
+arq_snapshot_names() {
+  snapshot_names | while IFS= read -r snapshot; do
+    case "$snapshot" in
+      "$snapshot_prefix"*) printf '%s\n' "$snapshot" ;;
+    esac
+  done
+}
+
+restore_services() {
+  original_status=$1
+  restore_failed=no
+  trap - EXIT HUP INT TERM
+
+  if [ "$agent_stopped" = yes ]; then
+    if sudo launchctl bootstrap system "$agent_plist"; then
+      printf 'Restored Arq agent.\n'
+    else
+      printf '%s: failed to restore system service %s\n' "$prog" "$agent_label" >&2
+      restore_failed=yes
+    fi
+  fi
+
+  if [ "$monitor_stopped" = yes ]; then
+    if launchctl bootstrap "gui/$uid" "$monitor_plist"; then
+      printf 'Restored Arq monitor.\n'
+    else
+      printf '%s: failed to restore user service %s\n' "$prog" "$monitor_label" >&2
+      restore_failed=yes
+    fi
+  fi
+
+  [ "$restore_failed" = yes ] && original_status=1
+  exit "$original_status"
+}
+
+case "${1:-}" in
+  '') ;;
+  --yes) assume_yes=yes ;;
+  -h|--help|help) usage; exit 0 ;;
+  *) usage >&2; exit 2 ;;
+esac
+[ "$#" -le 1 ] || { usage >&2; exit 2; }
+
+[ "$(uname -s)" = Darwin ] || fail 'this command supports macOS only'
+for command_name in awk df diskutil id launchctl mount sudo; do
+  require_command "$command_name"
+done
+
+data_volume=$(diskutil info "$data_mount" |
+  awk -F: '/Device Identifier/ { gsub(/[[:space:]]/, "", $2); print $2; exit }')
+[ -n "$data_volume" ] || fail "could not identify the APFS Data volume at $data_mount"
+
+snapshots=()
+while IFS= read -r snapshot; do
+  [ -n "$snapshot" ] && snapshots+=("$snapshot")
+done < <(arq_snapshot_names)
+
+if [ "${#snapshots[@]}" -eq 0 ]; then
+  printf 'No live Arq APFS snapshots found on %s (%s).\n' "$data_mount" "$data_volume"
+  exit 0
+fi
+
+printf 'Arq APFS snapshots selected for deletion:\n'
+for snapshot in "${snapshots[@]}"; do
+  printf '  %s\n' "$snapshot"
+done
+
+if [ "$assume_yes" != yes ]; then
+  printf 'Confirm Arq is paused and delete these snapshots? [y/N] '
+  IFS= read -r answer
+  case "$answer" in
+    y|Y|yes|YES|Yes) ;;
+    *) printf 'Canceled; nothing changed.\n'; exit 1 ;;
+  esac
+fi
+
+printf '\nData-volume space before cleanup:\n'
+df -h "$data_mount"
+
+sudo -v || fail 'could not acquire administrator privileges'
+uid=$(id -u)
+
+monitor_loaded=no
+agent_loaded=no
+launchctl print "gui/$uid/$monitor_label" >/dev/null 2>&1 && monitor_loaded=yes
+sudo launchctl print "system/$agent_label" >/dev/null 2>&1 && agent_loaded=yes
+
+trap 'restore_services $?' EXIT
+trap 'exit 130' HUP INT TERM
+
+if [ "$monitor_loaded" = yes ]; then
+  launchctl bootout "gui/$uid" "$monitor_plist" || fail "could not stop $monitor_label"
+  monitor_stopped=yes
+  printf 'Stopped Arq monitor.\n'
+fi
+
+if [ "$agent_loaded" = yes ]; then
+  sudo launchctl bootout system "$agent_plist" || fail "could not stop $agent_label"
+  agent_stopped=yes
+  printf 'Stopped Arq agent.\n'
+fi
+
+while IFS= read -r mount_line; do
+  mount_point=${mount_line#* on }
+  mount_point=${mount_point% (*}
+  case "$mount_point" in
+    "$arq_mount_root"/*)
+      mount_name=${mount_point#"$arq_mount_root"/}
+      for snapshot in "${snapshots[@]}"; do
+        if [ "$mount_name" = "${snapshot#"$snapshot_prefix"}" ]; then
+          printf 'Unmounting %s\n' "$mount_point"
+          sudo diskutil unmount force "$mount_point" || fail "could not unmount $mount_point"
+          break
+        fi
+      done
+      ;;
+  esac
+done < <(mount)
+
+for snapshot in "${snapshots[@]}"; do
+  printf 'Deleting %s\n' "$snapshot"
+  sudo diskutil apfs deleteSnapshot "$data_volume" -name "$snapshot" ||
+    fail "could not delete snapshot $snapshot"
+done
+
+remaining=$(arq_snapshot_names)
+for snapshot in "${snapshots[@]}"; do
+  if printf '%s\n' "$remaining" | grep -Fxq -- "$snapshot"; then
+    fail "snapshot remains after deletion: $snapshot"
+  fi
+done
+
+printf '\nData-volume space after cleanup:\n'
+df -h "$data_mount"
+printf 'Verified removal of %s Arq snapshot(s).\n' "${#snapshots[@]}"
