@@ -31,3 +31,6 @@ the tool that needs it. Shell config wraps each tool so it runs under `fnox exec
 5. `lock-stray-zshrc` — hold the inert root `~/.zshrc` immutable so editors that don't know about
    z4h can't clobber shell config (real config is `~/.config/zsh/.zshrc` via ZDOTDIR). macOS needs
    no privileges; Linux needs `sudo lock-stray-zshrc`. Run `lock-stray-zshrc unlock` to undo.
+6. `arq-clear-snapshots` — after pausing Arq, stop its background services, delete only live
+   Arq-named APFS snapshots, verify their removal, and restore the services. Use `--yes` to skip
+   the interactive confirmation.
