@@ -63,6 +63,10 @@ case "${1:-}" in
     printf 'launchctl bootout %s\n' "$label" >>"$FAKE_STATE/calls"
     grep -Fxv "$label" "$FAKE_STATE/services" >"$FAKE_STATE/services.next" || true
     mv "$FAKE_STATE/services.next" "$FAKE_STATE/services"
+    if [ "${FAKE_SIGNAL_ON_BOOTOUT:-}" = "$label" ]; then
+      kill -TERM "$PPID"
+      sleep 0.1
+    fi
     ;;
   bootstrap)
     label=$(label_from_target "$3")
@@ -202,6 +206,17 @@ run_cleaner --yes
 unset FAKE_LIST_MODE
 assert_eq 1 "$status" "verification listing failure exits nonzero"
 assert_eq "$services" "$(sort "$FAKE_STATE/services")" "services are restored after listing error"
+
+# A signal after launchd unloads a service must still restore that service.
+new_case interrupted_bootout
+printf 'com_haystacksoftware_arqagent_VOLUME_1\n' >"$FAKE_STATE/snapshots"
+printf '%s\n' "$services" >"$FAKE_STATE/services"
+FAKE_SIGNAL_ON_BOOTOUT=com.haystacksoftware.ArqMonitor
+export FAKE_SIGNAL_ON_BOOTOUT
+run_cleaner --yes
+unset FAKE_SIGNAL_ON_BOOTOUT
+assert_eq 130 "$status" "interruption exits with signal status"
+assert_eq "$services" "$(sort "$FAKE_STATE/services")" "service unloaded before signal is restored"
 
 printf 'RESULT run=%s failed=%s\n' "$TESTS_RUN" "$TESTS_FAILED"
 [ "$TESTS_FAILED" -eq 0 ]

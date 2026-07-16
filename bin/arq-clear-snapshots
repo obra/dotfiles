@@ -138,14 +138,14 @@ trap 'restore_services $?' EXIT
 trap 'exit 130' HUP INT TERM
 
 if [ "$monitor_loaded" = yes ]; then
-  launchctl bootout "gui/$uid" "$monitor_plist" || fail "could not stop $monitor_label"
   monitor_stopped=yes
+  launchctl bootout "gui/$uid" "$monitor_plist" || fail "could not stop $monitor_label"
   printf 'Stopped Arq monitor.\n'
 fi
 
 if [ "$agent_loaded" = yes ]; then
-  sudo launchctl bootout system "$agent_plist" || fail "could not stop $agent_label"
   agent_stopped=yes
+  sudo launchctl bootout system "$agent_plist" || fail "could not stop $agent_label"
   printf 'Stopped Arq agent.\n'
 fi
 
