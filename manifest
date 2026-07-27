@@ -7,6 +7,7 @@ bin/arq-clear-snapshots                  macos
 bin/coderabbit-extract
 bin/flatten.js
 bin/git-worktree-llm
+bin/go-cache-cap
 bin/homedir-sync
 bin/idb
 bin/lock-stray-zshrc
@@ -69,6 +70,10 @@ Library/Application Support/Cursor/User/keybindings.json            macos
 Library/Application Support/Windsurf/User/settings.json             macos
 Library/Application Support/com.mitchellh.ghostty/config            macos
 .config/opencode/opencode.json
+
+# Scheduled jobs. launchd reads these at login; after changing one, reload it with
+# `launchctl bootout gui/$UID/<label>` then `launchctl bootstrap gui/$UID <plist>`.
+Library/LaunchAgents/com.fsck.go-cache-cap.plist                     macos
 
 # Other tool configs (portable, non-secret). Each tool's surrounding dir is tool-managed
 # state — only the authored config file is tracked.

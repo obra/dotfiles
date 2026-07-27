@@ -1,0 +1,56 @@
+#!/bin/sh
+# Wipe the Go build cache when it grows past a size cap.
+# Go never bounds GOCACHE (golang/go#29561); its only pruning is a 5-day age
+# trim, so heavy builds grow it without limit. Runs daily via the
+# com.fsck.go-cache-cap LaunchAgent (logs to ~/Library/Logs/go-cache-cap.log);
+# safe to run any time — the cache is derived output and Go rebuilds on demand.
+set -u
+
+prog=${0##*/}
+max_gb=20
+
+usage() {
+  cat <<EOF
+usage: $prog [--max-gb N]
+
+Report the Go build cache size and run \`go clean -cache\` when it exceeds
+the cap (default ${max_gb}G).
+EOF
+}
+
+fail() {
+  printf '%s: %s\n' "$prog" "$*" >&2
+  exit 1
+}
+
+while [ $# -gt 0 ]; do
+  case $1 in
+    --max-gb) shift; [ $# -gt 0 ] || fail "--max-gb needs a value"; max_gb=$1 ;;
+    -h|--help) usage; exit 0 ;;
+    *) usage >&2; fail "unknown argument: $1" ;;
+  esac
+  shift
+done
+
+command -v go >/dev/null 2>&1 || fail "required command not found: go"
+
+cache=$(go env GOCACHE) || fail "go env GOCACHE failed"
+now=$(date '+%Y-%m-%d %H:%M:%S')
+
+if [ ! -d "$cache" ]; then
+  printf '%s %s: %s does not exist; nothing to do\n' "$now" "$prog" "$cache"
+  exit 0
+fi
+
+size_kb=$(du -sk "$cache" | cut -f1) || fail "du failed on $cache"
+size_h=$(awk "BEGIN{printf \"%.1fG\", $size_kb/1048576}")
+max_kb=$((max_gb * 1024 * 1024))
+
+if [ "$size_kb" -gt "$max_kb" ]; then
+  printf '%s %s: %s is %s, over the %sG cap; running go clean -cache\n' \
+    "$now" "$prog" "$cache" "$size_h" "$max_gb"
+  go clean -cache || fail "go clean -cache failed"
+else
+  printf '%s %s: %s is %s, under the %sG cap; nothing to do\n' \
+    "$now" "$prog" "$cache" "$size_h" "$max_gb"
+fi

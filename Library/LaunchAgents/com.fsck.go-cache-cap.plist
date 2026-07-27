@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Daily Go build cache size cap: runs ~/bin/go-cache-cap (wipes GOCACHE when
+     over 20G). sh -c expands $HOME so this plist deploys unchanged on any Mac,
+     and supplies a PATH that finds go under launchd's minimal environment. -->
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>com.fsck.go-cache-cap</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/bin/sh</string>
+		<string>-c</string>
+		<string>PATH="/opt/homebrew/bin:/usr/local/bin:$HOME/.local/share/mise/shims:$PATH" "$HOME/bin/go-cache-cap" >>"$HOME/Library/Logs/go-cache-cap.log" 2>&amp;1</string>
+	</array>
+	<key>StartCalendarInterval</key>
+	<dict>
+		<key>Hour</key>
+		<integer>12</integer>
+		<key>Minute</key>
+		<integer>15</integer>
+	</dict>
+</dict>
+</plist>
