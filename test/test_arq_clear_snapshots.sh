@@ -134,6 +134,11 @@ run_cleaner() {
 services='com.haystacksoftware.ArqMonitor
 com.haystacksoftware.arqagent'
 
+# The restore order is deliberately unspecified, so comparisons sort first.
+# Collation is pinned to C: under en_US.UTF-8 sort ignores case and orders
+# arqagent before ArqMonitor, which does not match the literal above.
+restored_services() { LC_ALL=C sort "$FAKE_STATE/services"; }
+
 # No matching snapshot is a successful no-op before sudo or service changes.
 new_case no_snapshot
 printf 'com.apple.os.update-example\n' >"$FAKE_STATE/snapshots"
@@ -162,7 +167,7 @@ printf '/dev/disk9s1 on /Library/Application Support/ArqAgentAPFS.noindex/6565D2
 run_cleaner --yes
 assert_eq 0 "$status" "matching snapshots are cleared"
 assert_eq "com.apple.os.update-example" "$(cat "$FAKE_STATE/snapshots")" "unrelated snapshot remains"
-assert_eq "$services" "$(sort "$FAKE_STATE/services")" "loaded Arq services are restored"
+assert_eq "$services" "$(restored_services)" "loaded Arq services are restored"
 delete_count=$(grep -c '^diskutil delete com_haystacksoftware_arqagent_' "$FAKE_STATE/calls" || true)
 assert_eq 2 "$delete_count" "each discovered Arq snapshot is deleted"
 os_delete_count=$(grep -c '^diskutil delete com.apple' "$FAKE_STATE/calls" || true)
@@ -186,7 +191,7 @@ printf 'com_haystacksoftware_arqagent_VOLUME_1\n' >"$FAKE_STATE/snapshots"
 printf '%s\n' "$services" >"$FAKE_STATE/services"
 FAKE_DELETE_MODE=fail run_cleaner --yes
 assert_eq 1 "$status" "deletion error exits nonzero"
-assert_eq "$services" "$(sort "$FAKE_STATE/services")" "services are restored after deletion error"
+assert_eq "$services" "$(restored_services)" "services are restored after deletion error"
 
 # A command that reports deletion but leaves the snapshot is caught by verification.
 new_case verification_failure
@@ -194,7 +199,7 @@ printf 'com_haystacksoftware_arqagent_VOLUME_1\n' >"$FAKE_STATE/snapshots"
 printf '%s\n' "$services" >"$FAKE_STATE/services"
 FAKE_DELETE_MODE=noop run_cleaner --yes
 assert_eq 1 "$status" "remaining snapshot fails verification"
-assert_eq "$services" "$(sort "$FAKE_STATE/services")" "services are restored after verification error"
+assert_eq "$services" "$(restored_services)" "services are restored after verification error"
 
 # Failure to obtain the post-deletion listing must not be reported as verified success.
 new_case verification_list_failure
@@ -205,7 +210,7 @@ export FAKE_LIST_MODE
 run_cleaner --yes
 unset FAKE_LIST_MODE
 assert_eq 1 "$status" "verification listing failure exits nonzero"
-assert_eq "$services" "$(sort "$FAKE_STATE/services")" "services are restored after listing error"
+assert_eq "$services" "$(restored_services)" "services are restored after listing error"
 
 # A signal after launchd unloads a service must still restore that service.
 new_case interrupted_bootout
@@ -216,7 +221,7 @@ export FAKE_SIGNAL_ON_BOOTOUT
 run_cleaner --yes
 unset FAKE_SIGNAL_ON_BOOTOUT
 assert_eq 130 "$status" "interruption exits with signal status"
-assert_eq "$services" "$(sort "$FAKE_STATE/services")" "service unloaded before signal is restored"
+assert_eq "$services" "$(restored_services)" "service unloaded before signal is restored"
 
 printf 'RESULT run=%s failed=%s\n' "$TESTS_RUN" "$TESTS_FAILED"
 [ "$TESTS_FAILED" -eq 0 ]
