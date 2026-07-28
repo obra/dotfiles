@@ -11,6 +11,7 @@ bin/go-cache-cap
 bin/homedir-sync
 bin/idb
 bin/lock-stray-zshrc
+bin/mac-bootstrap                        macos
 .config/karabiner/karabiner.json
 .config/ccstatusline/settings.json
 .config/mise/config.toml

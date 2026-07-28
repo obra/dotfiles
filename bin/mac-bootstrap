@@ -1,0 +1,136 @@
+#!/bin/sh
+# mac-bootstrap — turn a fresh Mac into a managed dev workstation.
+#
+# Installs the Xcode Command Line Tools and Homebrew (each needs sudo, once),
+# clones the homedir-manager + dotfiles content repos, symlink-deploys them,
+# then installs the curated Brewfile, mise-managed tools, and Claude Code.
+# Idempotent: every step is skipped when already satisfied, so re-running is
+# always safe. Interactive logins (1Password, Tailscale, gh, ...) come after —
+# see docs/new-machine.md.
+#
+# Day-one usage from another machine (-A forwards your agent for the private
+# clone; you'll type the machine's sudo password once):
+#   ssh -A -t jesse@newmac 'sh -c "$(curl -fsSL https://raw.githubusercontent.com/obra/dotfiles/main/bin/mac-bootstrap)"'
+set -u
+
+usage() {
+  cat <<'EOF'
+usage: mac-bootstrap [--help]
+
+Bootstrap a fresh Mac into a managed dev workstation: Xcode Command Line
+Tools, Homebrew, content repos (homedir-manager, dotfiles, dotfiles-private),
+symlink deploy, curated Brewfile, mise tools, Claude Code. Idempotent; safe
+to re-run. Steps needing sudo prompt for it.
+EOF
+}
+
+case "${1:-}" in
+  '') ;;
+  -h|--help) usage; exit 0 ;;
+  *) printf 'mac-bootstrap: unknown argument: %s\n' "$1" >&2; usage >&2; exit 2 ;;
+esac
+
+die() { printf 'mac-bootstrap: %s\n' "$*" >&2; exit 1; }
+step() { printf '==> %s\n' "$*"; }
+
+[ "$(uname -s)" = Darwin ] || die "this only runs on macOS"
+
+BASE="${HOMEDIR_MANAGER_BASE:-$HOME/git}"
+# homedir-manager's bootstrap and the Claude Code installer both land in
+# ~/.local/bin, which isn't on a fresh machine's PATH yet.
+PATH="$HOME/.local/bin:$PATH"; export PATH
+
+# --- Xcode Command Line Tools -----------------------------------------------
+if xcode-select -p >/dev/null 2>&1; then
+  step "Xcode Command Line Tools: already installed"
+else
+  step "Installing Xcode Command Line Tools (needs sudo)"
+  sudo -v || die "sudo is required to install the Command Line Tools"
+  # The sentinel makes softwareupdate list the CLT package without the GUI flow.
+  sentinel=/tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
+  touch "$sentinel"
+  label=$(softwareupdate -l 2>/dev/null \
+    | sed -n 's/^[* ]*Label: *\(Command Line Tools.*\)$/\1/p' | tail -1)
+  if [ -z "$label" ]; then
+    rm -f "$sentinel"
+    die "softwareupdate lists no Command Line Tools package"
+  fi
+  if ! sudo softwareupdate -i "$label"; then
+    rm -f "$sentinel"
+    die "Command Line Tools install failed"
+  fi
+  rm -f "$sentinel"
+fi
+
+# --- Homebrew ----------------------------------------------------------------
+# A fresh shell won't have brew on PATH even when it's installed.
+brew_root="${HOMEBREW_PREFIX:-/opt/homebrew}"
+if ! command -v brew >/dev/null 2>&1 && [ -x "$brew_root/bin/brew" ]; then
+  eval "$("$brew_root/bin/brew" shellenv)"
+fi
+if command -v brew >/dev/null 2>&1; then
+  step "Homebrew: already installed"
+else
+  step "Installing Homebrew (needs sudo)"
+  sudo -v || die "sudo is required to install Homebrew"
+  installer=$(mktemp)
+  curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh \
+    >"$installer" || die "downloading the Homebrew installer failed"
+  NONINTERACTIVE=1 bash "$installer" || die "Homebrew install failed"
+  rm -f "$installer"
+  [ -x "$brew_root/bin/brew" ] && eval "$("$brew_root/bin/brew" shellenv)"
+  command -v brew >/dev/null 2>&1 || die "brew is still not on PATH after install"
+fi
+
+# --- Content repos -----------------------------------------------------------
+step "Cloning content repos into $BASE"
+mkdir -p "$BASE"
+for repo in homedir-manager dotfiles dotfiles-private; do
+  if [ -d "$BASE/$repo/.git" ]; then
+    printf '    %s: already cloned\n' "$repo"
+  else
+    GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=accept-new" \
+      git clone "git@github.com:obra/$repo.git" "$BASE/$repo" \
+      || die "cloning $repo failed (day one, run under ssh -A so your agent is forwarded)"
+  fi
+done
+
+# --- homedir-manager + symlink deploy ----------------------------------------
+if command -v homedir-manager >/dev/null 2>&1; then
+  step "homedir-manager: already on PATH"
+else
+  step "Bootstrapping homedir-manager"
+  (cd "$BASE/homedir-manager" && ./bootstrap) || die "homedir-manager bootstrap failed"
+  command -v homedir-manager >/dev/null 2>&1 \
+    || die "homedir-manager is still not on PATH after bootstrap"
+fi
+step "Deploying dotfile symlinks"
+homedir-manager install || die "homedir-manager install failed"
+
+# --- Packages and tools -------------------------------------------------------
+BREWFILE="$HOME/.config/homebrew/Brewfile"
+[ -e "$BREWFILE" ] || die "expected $BREWFILE after deploy; is the dotfiles manifest intact?"
+step "Installing Brewfile packages"
+brew bundle --file "$BREWFILE" || die "brew bundle failed"
+
+step "Installing mise-managed tools"
+mise install || die "mise install failed"
+
+if command -v claude >/dev/null 2>&1; then
+  step "Claude Code: already installed"
+else
+  step "Installing Claude Code"
+  installer=$(mktemp)
+  curl -fsSL https://claude.ai/install.sh >"$installer" \
+    || die "downloading the Claude Code installer failed"
+  bash "$installer" || die "Claude Code install failed"
+  rm -f "$installer"
+fi
+
+# --- Verify -------------------------------------------------------------------
+missing=
+for cmd in git brew homedir-manager mise claude; do
+  command -v "$cmd" >/dev/null 2>&1 || missing="$missing $cmd"
+done
+[ -z "$missing" ] || die "still missing after bootstrap:$missing"
+step "Done. Next: interactive logins — see docs/new-machine.md in the dotfiles repo."
