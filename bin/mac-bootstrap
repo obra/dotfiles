@@ -8,9 +8,10 @@
 # always safe. Interactive logins (1Password, Tailscale, gh, ...) come after —
 # see docs/new-machine.md.
 #
-# Day-one usage from another machine (-A forwards your agent for the private
-# clone; you'll type the machine's sudo password once):
-#   ssh -A -t jesse@newmac 'sh -c "$(curl -fsSL https://raw.githubusercontent.com/obra/dotfiles/main/bin/mac-bootstrap)"'
+# Day one the new machine needs its own GitHub key for the dotfiles-private
+# clone (agent forwarding won't carry Secretive keys) — see docs/new-machine.md
+# for the two-command key setup. Then, from an existing machine:
+#   ssh -t jesse@newmac 'sh -c "$(curl -fsSL https://raw.githubusercontent.com/obra/dotfiles/main/bin/mac-bootstrap)"'
 set -u
 
 usage() {
@@ -91,7 +92,7 @@ for repo in homedir-manager dotfiles dotfiles-private; do
   else
     GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=accept-new" \
       git clone "git@github.com:obra/$repo.git" "$BASE/$repo" \
-      || die "cloning $repo failed (day one, run under ssh -A so your agent is forwarded)"
+      || die "cloning $repo failed (day one: register this machine's SSH key with GitHub first — see docs/new-machine.md)"
   fi
 done
 

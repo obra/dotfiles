@@ -11,15 +11,23 @@ Linux and headless machines use the manual steps in the README plus the
 ## Run the bootstrap
 
 Prerequisites on the new machine: your user account exists, Remote Login is on,
-and your SSH key is in `~/.ssh/authorized_keys`. Then, from an existing machine:
+and your SSH key is in `~/.ssh/authorized_keys`.
+
+First give the machine its own GitHub key — the `dotfiles-private` clone needs
+it, and agent forwarding won't carry Secretive-held keys (`-A` forwards the
+empty Apple agent instead). From an existing machine with `gh`:
 
 ```sh
-ssh -A -t jesse@NEWHOST 'sh -c "$(curl -fsSL https://raw.githubusercontent.com/obra/dotfiles/main/bin/mac-bootstrap)"'
+ssh jesse@NEWHOST 'ssh-keygen -t ed25519 -N "" -C "jesse@NEWHOST" -f ~/.ssh/id_ed25519 && cat ~/.ssh/id_ed25519.pub' \
+  | gh ssh-key add - --title "NEWHOST machine key"
 ```
 
-`-A` forwards your SSH agent so the `dotfiles-private` clone works before the
-new machine has its own GitHub key. You'll type the machine's sudo password
-once, for the Xcode Command Line Tools and Homebrew installs.
+Then run the bootstrap (you'll type the machine's sudo password once, for the
+Xcode Command Line Tools and Homebrew installs):
+
+```sh
+ssh -t jesse@NEWHOST 'sh -c "$(curl -fsSL https://raw.githubusercontent.com/obra/dotfiles/main/bin/mac-bootstrap)"'
+```
 
 The script (`bin/mac-bootstrap`) is idempotent — rerun it anytime, locally or
 over ssh. It does, skipping whatever is already done:
@@ -39,8 +47,8 @@ Nothing here is scriptable; it's all GUI sign-ins and OAuth:
 1. **1Password**: sign in, then Settings → Developer → enable CLI integration
    so `op` works.
 2. **Tailscale**: open the app, log in, verify the machine joins the tailnet.
-3. **Secretive**: create a key for this machine, add it to GitHub. Until then,
-   pushes need a forwarded agent.
+3. **Secretive** (optional upgrade): create a hardware-backed key, add it to
+   GitHub, and retire the bootstrap-era `~/.ssh/id_ed25519` machine key.
 4. **CLI logins**: `gh auth login`, `claude` (prompts on first run), `codex`,
    `bw login`.
 5. Grant TCC prompts as they appear. Caution: don't give Terminal a
