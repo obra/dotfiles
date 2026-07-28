@@ -1,0 +1,28 @@
+# Curated workstation package set — deliberately minimal, NOT a dump of any one
+# machine. Add packages here (then `brew bundle --global`) instead of ad-hoc
+# `brew install`, so every Mac stays reproducible from this file.
+# Deployed by homedir-manager; `brew bundle --global` finds it via
+# HOMEBREW_BUNDLE_FILE_GLOBAL (set in .zshenv — XDG_CONFIG_HOME is unset here).
+
+brew "gh"
+brew "mise"
+brew "tmux"
+brew "mosh"
+brew "wget"
+brew "coreutils"
+brew "uv"
+brew "bitwarden-cli"
+brew "git-spice"
+brew "zellij"
+
+cask "1password"
+cask "1password-cli"          # op — fnox secrets chain
+cask "secretive"              # .ssh/config.d/macos.conf points at its agent socket
+cask "tailscale-app"
+cask "karabiner-elements"     # config deploys from this repo
+cask "hammerspoon"            # config deploys from this repo
+cask "google-chrome"
+cask "codex"
+cask "obsidian"
+cask "arq"
+cask "orbstack"               # containers; ssh config already has an OrbStack block

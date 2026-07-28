@@ -18,6 +18,10 @@ if [ -n "${ZSH_VERSION-}" ]; then
   # return) so agents and cron get it too, not only interactive shells.
   [ -r "$HOME/.config/gog/keyring-password" ] && export GOG_KEYRING_PASSWORD="$(cat "$HOME/.config/gog/keyring-password")"
   #
+  # `brew bundle --global` only looks under ~/.config when XDG_CONFIG_HOME is
+  # set (it isn't here), so point it at the manifest-deployed Brewfile directly.
+  export HOMEBREW_BUNDLE_FILE_GLOBAL="$HOME/.config/homebrew/Brewfile"
+  #
   # Do not change anything else in this file.
 
   : ${ZDOTDIR:=$HOME/.config/zsh}   # keep zsh config under ~/.config/zsh, not $HOME

@@ -19,6 +19,7 @@ bin/lock-stray-zshrc
 .config/cage/config.json
 .config/sprout/settings.json
 .config/git/ignore
+.config/homebrew/Brewfile    macos
 .config/zellij/config.kdl
 .coderabbit-extractor
 .zshenv
