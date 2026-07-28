@@ -24,6 +24,11 @@ the tool that needs it. Shell config wraps each tool so it runs under `fnox exec
 (`homedir-manager/share/SECRETS.md`).
 
 ## Bootstrap a new machine
+**Mac:** run `bin/mac-bootstrap` — one command installs CLT, Homebrew, the repos, symlinks,
+Brewfile packages, mise tools, and Claude Code. Full process incl. the interactive-login
+checklist: [docs/new-machine.md](docs/new-machine.md).
+
+**Linux / manual:**
 1. `git clone https://github.com/obra/dotfiles ~/git/dotfiles`
 2. Clone the `homedir-manager` engine into `~/git/homedir-manager` and run `~/git/homedir-manager/bootstrap`.
 3. `homedir-manager install`
