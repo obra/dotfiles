@@ -31,6 +31,7 @@ cask "whatsapp"
 cask "beeper"
 cask "granola"
 cask "bambu-studio"
+cask "lm-studio"
 # clearance is NOT here: internal Prime Radiant app, no cask. Install the
 # latest release: gh release download -R prime-radiant-inc/clearance
 # arq is NOT here: the license pins the app to versions inside its updates
