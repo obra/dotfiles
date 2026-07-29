@@ -45,7 +45,8 @@ over ssh. It does, skipping whatever is already done:
 Nothing here is scriptable; it's all GUI sign-ins and OAuth:
 
 1. **1Password**: sign in, then Settings → Developer → enable CLI integration
-   so `op` works.
+   so `op` works — then quit and reopen the app, or `op` keeps failing with
+   "couldn't connect to the 1Password desktop app".
 2. **Tailscale**: open the app, log in, verify the machine joins the tailnet.
 3. **Secretive** (optional upgrade): create a hardware-backed key, add it to
    GitHub, and retire the bootstrap-era `~/.ssh/id_ed25519` machine key.
