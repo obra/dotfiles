@@ -187,6 +187,15 @@ if [ "$clt_line" -lt "$brewinst_line" ] && [ "$brewinst_line" -lt "$bundle_line"
 else
   assert_eq "ordered" "$clt_line/$brewinst_line/$bundle_line" "CLT -> Homebrew -> brew bundle order"
 fi
+# The deployed ssh config's ControlPath points into ~/.ssh/s; ssh refuses to
+# open control sockets when the directory is missing.
+if [ -d "$TMP/fresh/home/.ssh/s" ]; then
+  assert_eq "created" "created" "fresh run creates ~/.ssh/s"
+else
+  assert_eq "created" "missing" "fresh run creates ~/.ssh/s"
+fi
+perms=$(stat -f %Lp "$TMP/fresh/home/.ssh/s" 2>/dev/null)
+assert_eq 700 "$perms" "~/.ssh/s is mode 700"
 
 # --- already-bootstrapped machine: no installers re-run ---------------------
 make_case "$TMP/idem"

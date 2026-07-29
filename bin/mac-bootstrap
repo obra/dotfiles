@@ -108,6 +108,11 @@ fi
 step "Deploying dotfile symlinks"
 homedir-manager install || die "homedir-manager install failed"
 
+# The deployed ssh config's ControlPath points into ~/.ssh/s; ssh refuses to
+# open control sockets when the directory is missing.
+mkdir -p "$HOME/.ssh/s"
+chmod 700 "$HOME/.ssh" "$HOME/.ssh/s"
+
 # --- Packages and tools -------------------------------------------------------
 BREWFILE="$HOME/.config/homebrew/Brewfile"
 [ -e "$BREWFILE" ] || die "expected $BREWFILE after deploy; is the dotfiles manifest intact?"
