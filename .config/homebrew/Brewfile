@@ -24,5 +24,7 @@ cask "hammerspoon"            # config deploys from this repo
 cask "google-chrome"
 cask "codex"
 cask "obsidian"
-cask "arq"
+# arq is NOT here: the license pins the app to versions inside its updates
+# window, and the cask tracks latest. Install the covered version directly:
+# https://www.arqbackup.com/download/arqbackup/Arq<version>.pkg
 cask "orbstack"               # containers; ssh config already has an OrbStack block
