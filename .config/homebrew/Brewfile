@@ -32,6 +32,7 @@ cask "beeper"
 cask "granola"
 cask "bambu-studio"
 cask "lm-studio"
+cask "dropbox"
 tap "prime-radiant-inc/tap"
 cask "prime-radiant-inc/tap/clearance"
 # arq is NOT here: the license pins the app to versions inside its updates
