@@ -1,0 +1,75 @@
+#!/bin/sh
+# Stage Bitwarden fields on the clipboard one at a time so a human can paste
+# them into GUI fields (Arq storage setup, app logins). Secret values go
+# straight from `bw get` to the clipboard: they never appear on the terminal,
+# and the clipboard is cleared when the walk ends or fails partway.
+set -u
+
+prog=${0##*/}
+
+usage() {
+  cat <<EOF
+usage: $prog FIELD:ITEM [FIELD:ITEM ...]
+
+Stage each Bitwarden FIELD (anything \`bw get\` accepts: username, password,
+notes, totp, uri) of ITEM on the clipboard in turn, waiting for Enter between
+entries. Unlocks via bw-unlock unless BW_SESSION is already set. Clears the
+clipboard at the end.
+
+example:
+  $prog "username:Arq m5 AWS key" "password:Arq m5 AWS key"
+EOF
+}
+
+staged=0
+
+clear_staged() {
+  [ "$staged" -eq 1 ] && printf '' | pbcopy && staged=0
+}
+
+fail() {
+  printf '%s: %s\n' "$prog" "$*" >&2
+  clear_staged
+  exit 1
+}
+
+[ $# -gt 0 ] || { usage >&2; exit 1; }
+for arg in "$@"; do
+  case $arg in
+    -h|--help) usage; exit 0 ;;
+  esac
+done
+
+# Validate every spec before touching Bitwarden so a typo fails the whole run
+# up front instead of stranding the user mid-walk.
+for spec in "$@"; do
+  case $spec in
+    ?*:?*) ;;
+    *) fail "malformed spec '$spec' (expected FIELD:ITEM)" ;;
+  esac
+done
+
+command -v pbcopy >/dev/null 2>&1 || fail "required command not found: pbcopy"
+command -v bw >/dev/null 2>&1 || fail "required command not found: bw"
+
+if [ -z "${BW_SESSION:-}" ]; then
+  BW_SESSION=$(bw-unlock) || fail "bw-unlock failed"
+  export BW_SESSION
+fi
+
+total=$#
+n=0
+for spec in "$@"; do
+  n=$((n + 1))
+  field=${spec%%:*}
+  item=${spec#*:}
+  value=$(bw get "$field" "$item") || fail "bw get $field failed for '$item'"
+  printf '%s' "$value" | pbcopy || fail "pbcopy failed"
+  staged=1
+  printf '[%s/%s] on the clipboard: %s of "%s". Paste it, then press Enter. ' \
+    "$n" "$total" "$field" "$item"
+  read -r _ || fail "stdin closed before the walk finished"
+done
+
+clear_staged
+printf 'done; clipboard cleared\n'

@@ -4,6 +4,7 @@
 .gitconfig
 .hammerspoon        macos
 bin/arq-clear-snapshots                  macos
+bin/bw-paste                             macos
 bin/coderabbit-extract
 bin/flatten.js
 bin/git-worktree-llm
