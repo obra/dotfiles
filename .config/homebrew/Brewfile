@@ -32,8 +32,8 @@ cask "beeper"
 cask "granola"
 cask "bambu-studio"
 cask "lm-studio"
-# clearance is NOT here: internal Prime Radiant app, no cask. Install the
-# latest release: gh release download -R prime-radiant-inc/clearance
+tap "prime-radiant-inc/tap"
+cask "prime-radiant-inc/tap/clearance"
 # arq is NOT here: the license pins the app to versions inside its updates
 # window, and the cask tracks latest. Install the covered version directly:
 # https://www.arqbackup.com/download/arqbackup/Arq<version>.pkg
