@@ -22,8 +22,17 @@ cask "tailscale-app"
 cask "karabiner-elements"     # config deploys from this repo
 cask "hammerspoon"            # config deploys from this repo
 cask "google-chrome"
+cask "arc"
 cask "codex"
 cask "obsidian"
+cask "slack"
+cask "signal"
+cask "whatsapp"
+cask "beeper"
+cask "granola"
+cask "bambu-studio"
+# clearance is NOT here: internal Prime Radiant app, no cask. Install the
+# latest release: gh release download -R prime-radiant-inc/clearance
 # arq is NOT here: the license pins the app to versions inside its updates
 # window, and the cask tracks latest. Install the covered version directly:
 # https://www.arqbackup.com/download/arqbackup/Arq<version>.pkg
