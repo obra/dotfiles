@@ -5,6 +5,7 @@
 # HOMEBREW_BUNDLE_FILE_GLOBAL (set in .zshenv — XDG_CONFIG_HOME is unset here).
 
 brew "gh"
+brew "mas"                    # Mac App Store installs below need App Store sign-in first
 brew "mise"
 brew "tmux"
 brew "mosh"
@@ -35,6 +36,19 @@ cask "lm-studio"
 cask "dropbox"
 tap "prime-radiant-inc/tap"
 cask "prime-radiant-inc/tap/clearance"
+
+mas "Bitwarden", id: 1352778147
+mas "Drafts", id: 1435957248
+mas "GarageBand", id: 682658836
+mas "Hex Fiend", id: 1342896380
+mas "iMovie", id: 408981434
+mas "Instapaper", id: 288545208
+mas "Keynote", id: 361285480
+mas "Numbers", id: 361304891
+mas "Pages", id: 361309726
+mas "Screens 5", id: 1663047912
+mas "TestFlight", id: 899247664
+mas "Xcode", id: 497799835
 # arq is NOT here: the license pins the app to versions inside its updates
 # window, and the cask tracks latest. Install the covered version directly:
 # https://www.arqbackup.com/download/arqbackup/Arq<version>.pkg
