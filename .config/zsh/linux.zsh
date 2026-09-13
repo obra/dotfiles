@@ -12,3 +12,13 @@ command -v zoxide >/dev/null && eval "$(zoxide init zsh)"
 
 # (Service-account token sourcing for headless machines moved to the common .zshrc —
 # it's capability-based, not Linux-specific.)
+
+# Shells inside tmux lack these: the tmux server is deliberately started
+# without them (see tmux@.service) so it will not put panes in
+# systemd --user scopes. Restore them so systemctl --user, gpg, etc. work.
+if [[ -z $XDG_RUNTIME_DIR && -d /run/user/$UID ]]; then
+  export XDG_RUNTIME_DIR=/run/user/$UID
+fi
+if [[ -z $DBUS_SESSION_BUS_ADDRESS && -S $XDG_RUNTIME_DIR/bus ]]; then
+  export DBUS_SESSION_BUS_ADDRESS=unix:path=$XDG_RUNTIME_DIR/bus
+fi
