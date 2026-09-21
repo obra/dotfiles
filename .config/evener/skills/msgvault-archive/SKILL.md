@@ -39,6 +39,8 @@ Any time-window question gets three parts, in this order:
 2. Answer with read commands.
 3. State the archive cutoff: "the archive sees nothing after <last sync>", so Jesse knows the blind spot.
 
+Note: the keyboard.io and Granola accounts leave LAST SYNC null even when freshly synced. Judge their freshness by the newest archived message, not the stamp.
+
 ## Syncing (pre-approved, run at will)
 
 Jesse's standing policy (2026-09-21): syncs run at will, no need to ask. This covers `msgvault sync`, `sync-granola`, and `sync-full <account>`, including baseline-establishing or staleness-repairing full syncs.
@@ -66,4 +68,4 @@ The systemd user timer `msgvault-sync.timer` runs daily: `msgvault sync` then `m
 
 ## Environment
 
-Every msgvault command, even a read, opens the daemon lock with write intent during startup. In a read-only sandbox every command therefore fails with "probe daemon lock ...: read-only file system". Run archive work from the main session or dispatch write-capable delegates. Do not fall back to raw sqlite to work around this; ask the main session instead.
+Every msgvault command, even a read, opens the daemon lock with write intent during startup. In a read-only sandbox every command therefore fails with "probe daemon lock ...: read-only file system". Run archive work from the main session, dispatch write-capable delegates, or, if a daemon is already running, query its documented HTTP API on 127.0.0.1 (loopback, no auth, dynamic port: find it via `msgvault daemon status` or the `start_api_server bind` line in the daemon log; endpoints like /api/v1/cli/search and /api/v1/cli/accounts are listed in `msgvault openapi`). Do not fall back to raw sqlite to work around this.
