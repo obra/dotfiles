@@ -65,6 +65,11 @@ bin/mac-bootstrap                        macos
 .codex/AGENTS.md
 merge-children .codex/skills
 
+# Evener skills: merged child-by-child like the codex skills dir, so new skills are
+# picked up without a manifest edit, and host-local skills already present in
+# ~/.config/evener/skills (the roborev installs) are left untouched.
+merge-children .config/evener/skills
+
 # Editor / app config files (macOS Application Support paths contain a space — handled by the
 # engine's manifest parser). Editor settings only; app state/caches are left untracked.
 Library/Application Support/Code/User/settings.json                 macos
