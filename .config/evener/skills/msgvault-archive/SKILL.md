@@ -52,11 +52,13 @@ msgvault sync <account>          # one account
 msgvault sync-full <account>     # full rescan; resumable, skips already-archived messages
 ```
 
-Incremental sync falls back to a resumable full sync automatically when Gmail history has expired (more than ~7 days stale), so staleness self-heals. IMAP folders can be picked with `--folder`/`--skip-folder`; `msgvault list-folders` lists them.
+Incremental sync falls back to a resumable full sync automatically when Gmail history has expired (more than ~7 days stale), so staleness self-heals. IMAP folders can be picked with `--folder`/`--skip-folder`; `msgvault list-folders` lists them. Full resyncs of large mailboxes run long: keyboard.io's initial full sync took 27.5 hours for 275k messages.
 
 ## Sync automation
 
 The systemd user timer `msgvault-sync.timer` runs daily: `msgvault sync` then `msgvault sync-granola`. Check it with `systemctl --user list-timers msgvault-sync.timer`. Logs: `msgvault logs` (add `--follow`, `--grep <term>`, `--level error`, or `--run-id`). Daemon control: `msgvault daemon start|stop|status`. Note the daemon registers 0 scheduled accounts by itself; the timer is what keeps things fresh.
+
+If a long `sync-full` is in flight when the timer fires, the timer's sync waits behind it and systemd kills the unit at its 4-hour timeout (the service then shows failed, result=timeout). That is contention, not a fault; the next scheduled run is clean.
 
 ## Safety gates
 
