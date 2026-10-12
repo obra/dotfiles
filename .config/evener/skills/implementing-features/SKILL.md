@@ -21,7 +21,7 @@ Load exact skill identifiers at their stages. Missing required capabilities bloc
 | 6. `/par` on implementation | Review the immutable base/head diff, approved spec, amendments and behavior evidence. Include new files. Resolve legitimate findings with failing-then-passing tests. |
 | 7. Simplify | REQUIRED: **simplify-code:simplify-code**. Preserve behavior and rerun affected checks. |
 | 8. Shepherd PR | REQUIRED: **shepherd-pr:shepherd-pr**. Commit all intended changes. Batch each round's edits into one push and one review/CI wait. Satisfy base policy before final approval. |
-| 9. Admin squash merge | Require current-head checks finished and green, matching review bodies and own per-commit findings settled under repository/Jesse policy. Use `gh pr merge <PR-URL> --admin --squash --match-head-commit <SHA>`. |
+| 9. Admin squash merge | Require current-head checks finished and green, matching review bodies and own per-commit findings settled under repository/Jesse policy. A RoboRev review is settled when every finding is 'low' or conclusively refuted: merge, then handle the 'low' findings immediately in a fast-follow PR. Use `gh pr merge <PR-URL> --admin --squash --match-head-commit <SHA>`. |
 | 10. Verify and clean up | Query GitHub `MERGED`, merge SHA and intended content first. Archive required evidence, inspect retention notes, stop owned jobs, then remove owned disposable scratch, worktree and branches. |
 | 11. Report | Report PR/SHA, behavior evidence, cleanup/preserved items. Deployment needs separate authorization. |
 
@@ -38,6 +38,7 @@ Invoke installed `/par`. If direct loading is unavailable, read its instructions
 
 **Red flags:**
 - Scope/spec changes or amendments: Jesse approves, then re-review before implementation continues.
+- Unrelated issue noticed mid-work: file a GitHub issue in the owning repository (create if it doesn't already exist) and keep it out of this PR.
 - Changed head: renew matching reviews/checks through shepherding.
 - Two rejected attempts at one finding: stop and report.
 - Merge timeout: reconcile before retry/cleanup.
