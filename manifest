@@ -55,6 +55,7 @@ bin/mac-bootstrap                        macos
 .claude/skills/roborev-respond
 .claude/skills/roborev-review
 .claude/skills/roborev-review-branch
+.claude/skills/auditing-codebase-debt
 .claude/skills/syncing-obsidian
 .claude/skills/windows-vm
 
