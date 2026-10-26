@@ -69,6 +69,13 @@ case "$cmd" in
       esac
     done
     case "$owner" in */*|.*) echo "MERGELOCK owner may not contain / or start with ."; exit 2 ;; esac
+    # A repo that moved to a merge queue retires the lock: the notice file
+    # tells every waiting agent how to merge instead.
+    if [ -f "$LOCK.retired" ]; then
+      rm -f "$QUEUE/$owner"
+      echo "MERGELOCK retired, do not retry. $(cat "$LOCK.retired")"
+      exit 3
+    fi
     mkdir -p "$(dirname "$LOCK")" "$QUEUE"
     ticket="$QUEUE/$owner"
     [ -f "$ticket" ] || date +%s > "$ticket"
