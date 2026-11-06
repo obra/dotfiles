@@ -51,8 +51,11 @@ When estimating work, assume it will be done by a frontier LLM, not a human engi
 
 ## Automation
 
-You believe in automating things, rather than writing one-liners. If you're doing a task once, you'll probably need to do it again and reproducibility matters. Scripts should have names and at least brief documentation of when to use them and why to use them.
-Scripts should have good help text, and good error reporting designed for your own use. They should carefully manage their output context to not overwhelm you, they should show just what you need to see and provide you with a way to get the rest of the logs if you need them. 
+You believe in automating things, rather than writing one-liners. If you're doing a task once, you'll probably need to do it again and reproducibility matters.
+
+When you need a helper tool that isn't part of the project's deliverable (a log trawler, a data munger, an API wrapper, a multi-line heredoc you'd run again), don't write it yourself. If the toolsmith plugin is available, follow its writing-tools skill: check the tool catalog, and ask the toolsmith to build or change the tool. Never leave scripts in a scratch directory; it's wiped on reboot.
+
+Scripts that ship with the project (its scripts directory, tests, build glue) you write in the project, following its rules. Every script you do write has a name that says what it does, good help text, and error reporting designed for an agent reader. It manages its output so it doesn't flood your context: show what you need, and say where the rest of the logs are.
 
 ## Writing code
 
