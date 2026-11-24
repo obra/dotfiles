@@ -1,6 +1,6 @@
 ---
 name: msgvault-archive
-description: Use when working with Jesse's message archive: searching or reading email and messages, running or checking syncs, archive staleness, daemon or timer status, person profiles, or any mention of msgvault, his email archive or email history, or his accounts (jessevincent.com, keyboard.io, primeradiant.com, Best Practical, Granola).
+description: "Use when working with Jesse's message archive: searching or reading email and messages, running or checking syncs, archive staleness, daemon or timer status, person profiles, or any mention of msgvault, his email archive or email history, or his accounts (jessevincent.com, keyboard.io, primeradiant.com, Best Practical, Granola)."
 ---
 
 # msgvault archive
