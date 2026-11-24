@@ -28,26 +28,28 @@
 		{
 			"id": "openai-codex",
 			"kind": "openai-codex",
-			"label": "Codex",
+			"label": "codex",
 			"enabled": true,
-			"createdAt": "2026-05-20T15:46:24.512Z",
-			"updatedAt": "2026-05-20T15:46:24.512Z"
+			"nonSecretHeaders": {},
+			"createdAt": "2026-07-20T20:27:19.711Z",
+			"updatedAt": "2026-07-20T21:29:05.391Z"
 		}
 	],
 	"defaults": {
 		"best": {
-			"providerId": "openai-codex",
-			"modelId": "gpt-5.5"
+			"providerId": "openai",
+			"modelId": "gpt-5.6-sol"
 		},
 		"balanced": {
-			"providerId": "openai-codex",
-			"modelId": "gpt-5.4-mini"
+			"providerId": "openai",
+			"modelId": "gpt-5.6-luna"
 		},
 		"fast": {
-			"providerId": "openai-codex",
-			"modelId": "gpt-5.3-codex-spark"
+			"providerId": "openai",
+			"modelId": "gpt-5.6-luna"
 		}
 	},
 	"memoryModels": {},
-	"agentModelOverrides": {}
+	"agentModelOverrides": {},
+	"memoryMaintenance": "auto"
 }
