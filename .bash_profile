@@ -29,3 +29,7 @@ export PATH="$HOME/.local/bin:$PATH"
 export PATH="$PATH:/Users/jesse/.lmstudio/bin"
 # End of LM Studio CLI section
 
+# Installer-written env shims (rustup/uv); harmless where absent
+[ -r "$HOME/.local/bin/env" ] && . "$HOME/.local/bin/env"
+[ -r "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
+

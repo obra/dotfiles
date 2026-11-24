@@ -58,3 +58,6 @@ fi
 . "$Z4H"/z4h.zsh || return
 
 setopt rcs
+
+# rustup env, present on some hosts only
+[ -r "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
