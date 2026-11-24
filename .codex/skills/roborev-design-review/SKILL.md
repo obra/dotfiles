@@ -1,6 +1,6 @@
 ---
 name: roborev-design-review
-description: Request a design review for a commit and present the results
+description: Use only when the user explicitly invokes $roborev-design-review
 ---
 
 # roborev-design-review
@@ -12,6 +12,20 @@ Request a design review for a commit and present the results.
 ```
 $roborev-design-review [commit] [--panel <name>|none]
 ```
+
+## Explicit invocation only
+
+Invocation must be explicit: literal personal `$roborev-design-review`, plugin
+`$roborev:roborev-design-review`, or structured Codex skill selection.
+Requests such as “review this commit's design” without one of these explicit mechanisms
+must use native behavior and must not run roborev.
+
+## Sandbox access
+
+roborev uses a local daemon. If a command fails with `permission denied`, the sandbox may be
+blocking access to its loopback port or Unix socket. Retry the same command with
+`sandbox_permissions: "require_escalated"`. Do not start or restart the daemon because a
+sandboxed status probe cannot reach it.
 
 ## When NOT to invoke this skill
 
@@ -25,7 +39,7 @@ This skill requires you to **execute bash commands** to validate the commit and 
 
 These instructions are guidelines, not a rigid script. Use the conversation
 context. Skip steps that are already satisfied. Defer to project-level
-CLAUDE.md instructions when they conflict with these steps.
+AGENTS.md instructions when they conflict with these steps.
 
 ## Instructions
 
@@ -33,11 +47,7 @@ When the user invokes `$roborev-design-review [commit] [--panel <name>|none]`:
 
 ### 1. Validate inputs
 
-If a commit ref is provided, verify it resolves to a valid commit:
-
-```bash
-git rev-parse --verify -- <commit>^{commit}
-```
+If a commit ref is provided, use the commit-provided command snippet below; it stores and validates the ref before invoking `roborev review`.
 
 If validation fails, inform the user the ref is invalid. Do not proceed.
 
@@ -45,11 +55,22 @@ If validation fails, inform the user the ref is invalid. Do not proceed.
 
 Construct and execute the review command:
 
+If no commit is specified, run:
+
 ```bash
-roborev review [commit] --wait --type design [--panel <name>|none]
+roborev review --from-skill --wait --type design [--panel <name>|none]
 ```
 
-- If no commit is specified, omit it (defaults to HEAD)
+If a commit is specified, run:
+
+```bash
+read -r commit <<'ROBOREV_REF'
+<commit>
+ROBOREV_REF
+git rev-parse --verify --end-of-options "$commit^{commit}" || exit 1
+roborev review --from-skill "$commit" --wait --type design [--panel <name>|none]
+```
+
 - If `--panel <name>` is specified, include it (fans out to the named config panel); `--panel none` forces a single-agent review
 
 The `--wait` flag blocks until the review completes.
@@ -92,7 +113,7 @@ If the review passed, confirm the result and do not offer `$roborev-fix`.
 User: `$roborev-design-review`
 
 Agent:
-1. Executes `roborev review --wait --type design`
+1. Executes `roborev review --from-skill --wait --type design`
 2. Presents the verdict and findings grouped by severity
 3. If findings exist: "Would you like me to address these findings? Run `$roborev-fix 1042`"
 4. If passed: "Design review passed with no findings."
@@ -102,8 +123,8 @@ Agent:
 User: `$roborev-design-review abc123`
 
 Agent:
-1. Validates: `git rev-parse --verify -- abc123^{commit}`
-2. Executes `roborev review abc123 --wait --type design`
+1. Validates: `git rev-parse --verify --end-of-options "abc123^{commit}"`
+2. Executes `roborev review --from-skill abc123 --wait --type design`
 3. Presents the verdict and findings
 4. If findings exist: "Would you like me to address these findings? Run `$roborev-fix 1043`"
 

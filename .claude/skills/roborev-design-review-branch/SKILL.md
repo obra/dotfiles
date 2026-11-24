@@ -1,6 +1,7 @@
 ---
 name: roborev-design-review-branch
-description: Request a design review for all commits on the current branch and present the results
+description: Use only when the user explicitly invokes /roborev-design-review-branch
+disable-model-invocation: true
 ---
 
 # roborev-design-review-branch
@@ -12,6 +13,20 @@ Request a design review for all commits on the current branch and present the re
 ```
 /roborev-design-review-branch [--base <branch>] [--panel <name>|none]
 ```
+
+## Explicit invocation only
+
+Invocation must be explicit: literal personal `/roborev-design-review-branch`, or structured
+Claude Code skill selection.
+Requests such as “review this branch's design” without one of these
+explicit mechanisms must use native behavior and must not run roborev.
+
+## Sandbox access
+
+roborev uses a local daemon. If a command fails with `permission denied`, the sandbox may be
+blocking access to its loopback port or Unix socket. Retry the same Bash command with
+`dangerouslyDisableSandbox: true`. Do not start or restart the daemon because a sandboxed
+status probe cannot reach it.
 
 ## When NOT to invoke this skill
 
@@ -33,11 +48,7 @@ When the user invokes `/roborev-design-review-branch [--base <branch>] [--panel 
 
 ### 1. Validate inputs
 
-If a base branch is provided, verify it resolves to a valid ref:
-
-```bash
-git rev-parse --verify -- <branch>
-```
+If a base branch is provided, use the base-branch command snippet below; it stores and validates the ref before invoking `roborev review`.
 
 If validation fails, inform the user the ref is invalid. Do not proceed.
 
@@ -45,8 +56,20 @@ If validation fails, inform the user the ref is invalid. Do not proceed.
 
 Construct the review command:
 
+If no base branch is specified, run:
+
+```bash
+roborev review --from-skill --branch --wait --type design [--panel <name>|none]
 ```
-roborev review --branch --wait --type design [--base <branch>] [--panel <name>|none]
+
+If a base branch is specified, run:
+
+```bash
+read -r branch <<'ROBOREV_REF'
+<branch>
+ROBOREV_REF
+git rev-parse --verify --end-of-options "$branch" || exit 1
+roborev review --from-skill --branch --wait --type design --base "$branch" [--panel <name>|none]
 ```
 
 - If `--base` is specified, include it (otherwise auto-detects the base branch)
@@ -58,8 +81,20 @@ Launch a background task that runs the command. This lets the user continue work
 
 Use the `Task` tool with `run_in_background: true` and `subagent_type: "Bash"`:
 
+If no base branch is specified, run:
+
+```bash
+roborev review --from-skill --branch --wait --type design [--panel <name>|none]
 ```
-roborev review --branch --wait --type design [--base <branch>] [--panel <name>|none]
+
+If a base branch is specified, run:
+
+```bash
+read -r branch <<'ROBOREV_REF'
+<branch>
+ROBOREV_REF
+git rev-parse --verify --end-of-options "$branch" || exit 1
+roborev review --from-skill --branch --wait --type design --base "$branch" [--panel <name>|none]
 ```
 
 Tell the user that the design review has been submitted and they can continue working. You will present the results when the review completes.
@@ -104,7 +139,7 @@ If the review passed, confirm the result and do not offer `/roborev-fix`.
 User: `/roborev-design-review-branch`
 
 Agent:
-1. Launches background task: `roborev review --branch --wait --type design`
+1. Launches background task: `roborev review --from-skill --branch --wait --type design`
 2. Tells user: "Design review submitted for branch. I'll present the results when it completes."
 3. When complete, presents the verdict and findings grouped by severity
 4. If findings exist: "Would you like me to address these findings? Run `/roborev-fix 1042`"
@@ -116,7 +151,7 @@ User: `/roborev-design-review-branch --base develop`
 
 Agent:
 1. Validates `develop` resolves to a valid ref
-2. Launches background task: `roborev review --branch --wait --type design --base develop`
+2. Launches background task: `roborev review --from-skill --branch --wait --type design --base develop`
 3. Tells user: "Design review submitted for branch (against develop). I'll present the results when it completes."
 4. When complete, presents the verdict and findings
 5. If findings exist: "Would you like me to address these findings? Run `/roborev-fix 1043`"

@@ -1,6 +1,6 @@
 ---
 name: roborev-review-branch
-description: Request a code review for all commits on the current branch and present the results
+description: Use only when the user explicitly invokes $roborev-review-branch
 ---
 
 # roborev-review-branch
@@ -12,6 +12,20 @@ Request a code review for all commits on the current branch and present the resu
 ```
 $roborev-review-branch [--base <branch>] [--type security|design] [--panel <name>|none]
 ```
+
+## Explicit invocation only
+
+Invocation must be explicit: literal personal `$roborev-review-branch`, plugin
+`$roborev:roborev-review-branch`, or structured Codex skill selection.
+Requests such as “review this branch” without one of these explicit mechanisms must use
+native behavior and must not run roborev.
+
+## Sandbox access
+
+roborev uses a local daemon. If a command fails with `permission denied`, the sandbox may be
+blocking access to its loopback port or Unix socket. Retry the same command with
+`sandbox_permissions: "require_escalated"`. Do not start or restart the daemon because a
+sandboxed status probe cannot reach it.
 
 ## When NOT to invoke this skill
 
@@ -25,7 +39,7 @@ This skill requires you to **execute bash commands** to validate inputs and run 
 
 These instructions are guidelines, not a rigid script. Use the conversation
 context. Skip steps that are already satisfied. Defer to project-level
-CLAUDE.md instructions when they conflict with these steps.
+AGENTS.md instructions when they conflict with these steps.
 
 ## Instructions
 
@@ -33,20 +47,55 @@ When the user invokes `$roborev-review-branch [--base <branch>] [--type security
 
 ### 1. Validate inputs
 
-If a base branch is provided, verify it resolves to a valid ref:
+If a base branch is provided, use the base-branch command snippet below; it stores and validates the ref before invoking `roborev review`.
 
-```bash
-git rev-parse --verify -- <branch>
-```
+The snippet recovers one case on its own: when the ref names a configured remote followed by a branch (for example `upstream/main`) and that remote-tracking ref has not been fetched into this worktree yet, it fetches that one branch from that one remote and re-validates. It searches configured remote names from the longest slash-delimited prefix, so remote names that contain slashes are supported. Every other unresolvable ref is still rejected, and no fetch is attempted for a ref with no configured remote prefix.
 
-If validation fails, inform the user the ref is invalid. Do not proceed.
+If validation fails, inform the user the ref is invalid and report the git error. Do not proceed.
 
 ### 2. Build and run the command
 
 Construct and execute the review command:
 
+If no base branch is specified, run:
+
 ```bash
-roborev review --branch --wait [--base <branch>] [--type <type>] [--panel <name>|none]
+roborev review --from-skill --branch --wait [--type <type>] [--panel <name>|none]
+```
+
+If a base branch is specified, run:
+
+```bash
+read -r branch <<'ROBOREV_REF'
+<branch>
+ROBOREV_REF
+if ! git rev-parse --verify --quiet --end-of-options "$branch" >/dev/null; then
+  remote=
+  remote_branch="${branch##*/}"
+  remote_candidate="${branch%/*}"
+  while :; do
+    if [ "$remote_candidate" != "$branch" ] && git config --get "remote.$remote_candidate.url" >/dev/null; then
+      remote="$remote_candidate"
+      break
+    fi
+    case "$remote_candidate" in
+      */*)
+        remote_branch="${remote_candidate##*/}/$remote_branch"
+        remote_candidate="${remote_candidate%/*}"
+        ;;
+      *)
+        break
+        ;;
+    esac
+  done
+  if [ -n "$remote" ]; then
+    git check-ref-format --branch "$remote_branch" >/dev/null || exit 1
+    git fetch --quiet --refmap= -- "$remote" "refs/heads/$remote_branch:refs/remotes/$remote/$remote_branch" || exit 1
+    branch="refs/remotes/$remote/$remote_branch"
+  fi
+  git rev-parse --verify --end-of-options "$branch" >/dev/null || exit 1
+fi
+roborev review --from-skill --branch --wait --base "$branch" [--type <type>] [--panel <name>|none]
 ```
 
 - If `--base` is specified, include it (otherwise auto-detects the base branch)
@@ -93,7 +142,7 @@ If the review passed, confirm the result and do not offer `$roborev-fix`.
 User: `$roborev-review-branch`
 
 Agent:
-1. Executes `roborev review --branch --wait`
+1. Executes `roborev review --from-skill --branch --wait`
 2. Presents the verdict and findings grouped by severity
 3. If findings exist: "Would you like me to address these findings? Run `$roborev-fix 1042`"
 4. If passed: "Branch review passed with no findings."
@@ -103,8 +152,8 @@ Agent:
 User: `$roborev-review-branch --base develop --type security`
 
 Agent:
-1. Validates: `git rev-parse --verify -- develop`
-2. Executes `roborev review --branch --wait --base develop --type security`
+1. Validates: `git rev-parse --verify --end-of-options "develop"`
+2. Executes `roborev review --from-skill --branch --wait --base develop --type security`
 3. Presents the verdict and findings
 4. If findings exist: "Would you like me to address these findings? Run `$roborev-fix 1043`"
 

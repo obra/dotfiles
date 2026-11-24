@@ -1,6 +1,6 @@
 ---
 name: roborev-respond
-description: Add a comment to a roborev code review and close it
+description: Use only when the user explicitly invokes $roborev-respond
 ---
 
 # roborev-respond
@@ -13,13 +13,27 @@ Record a comment on a roborev code review and close it.
 $roborev-respond <job_id> [message]
 ```
 
+## Explicit invocation only
+
+Invocation must be explicit: literal personal `$roborev-respond`, plugin
+`$roborev:roborev-respond`, or structured Codex skill selection.
+Requests such as “respond to this review” without one of these explicit mechanisms must use
+native behavior and must not run roborev.
+
+## Sandbox access
+
+roborev uses a local daemon. If a command fails with `permission denied`, the sandbox may be
+blocking access to its loopback port or Unix socket. Retry the same command with
+`sandbox_permissions: "require_escalated"`. Do not start or restart the daemon because a
+sandboxed status probe cannot reach it.
+
 ## IMPORTANT
 
 This skill requires you to **execute bash commands** to record the comment and close the review. The task is not complete until you run both commands and see confirmation output.
 
 These instructions are guidelines, not a rigid script. Use the conversation
 context. Skip steps that are already satisfied. Defer to project-level
-CLAUDE.md instructions when they conflict with these steps.
+AGENTS.md instructions when they conflict with these steps.
 
 ## Instructions
 
@@ -32,7 +46,7 @@ If no job_id is provided, inform the user that a job ID is required. Suggest `ro
 If a job_id is provided, inspect it before closing:
 
 ```bash
-roborev show --job <job_id> --json
+roborev show --from-skill --job <job_id> --json
 ```
 
 If `job.panel_role` is `"member"`, do **not** comment on or close that job.
@@ -45,7 +59,7 @@ parent or a non-panel review.
 
 **If a message is provided**, immediately execute:
 ```bash
-roborev comment --job <resolved_job_id> "<message>" && roborev close <resolved_job_id>
+roborev comment --from-skill --job <resolved_job_id> "<message>" && roborev close --from-skill <resolved_job_id>
 ```
 
 If the message contains quotes or special characters, escape them properly in the bash command.
@@ -70,7 +84,7 @@ User: `$roborev-respond 1019 Fixed all issues`
 
 Agent action:
 ```bash
-roborev comment --job 1019 "Fixed all issues" && roborev close 1019
+roborev comment --from-skill --job 1019 "Fixed all issues" && roborev close --from-skill 1019
 ```
 Then confirm: "Comment recorded and review #1019 closed."
 
@@ -86,7 +100,7 @@ User: "The null check was a false positive"
 
 Agent action:
 ```bash
-roborev comment --job 1019 "The null check was a false positive" && roborev close 1019
+roborev comment --from-skill --job 1019 "The null check was a false positive" && roborev close --from-skill 1019
 ```
 Then confirm: "Comment recorded and review #1019 closed."
 

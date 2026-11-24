@@ -1,6 +1,7 @@
 ---
 name: roborev-review
-description: Request a code review for a commit and present the results
+description: Use only when the user explicitly invokes /roborev-review
+disable-model-invocation: true
 ---
 
 # roborev-review
@@ -12,6 +13,20 @@ Request a code review for a commit and present the results.
 ```
 /roborev-review [commit] [--type security|design] [--panel <name>|none]
 ```
+
+## Explicit invocation only
+
+Invocation must be explicit: literal personal `/roborev-review`, or structured
+Claude Code skill selection.
+Requests such as “review this commit” without one of these explicit mechanisms must use native
+behavior and must not run roborev.
+
+## Sandbox access
+
+roborev uses a local daemon. If a command fails with `permission denied`, the sandbox may be
+blocking access to its loopback port or Unix socket. Retry the same Bash command with
+`dangerouslyDisableSandbox: true`. Do not start or restart the daemon because a sandboxed
+status probe cannot reach it.
 
 ## When NOT to invoke this skill
 
@@ -33,11 +48,7 @@ When the user invokes `/roborev-review [commit] [--type security|design] [--pane
 
 ### 1. Validate inputs
 
-If a commit ref is provided, verify it resolves to a valid commit:
-
-```bash
-git rev-parse --verify -- <commit>^{commit}
-```
+If a commit ref is provided, use the commit-provided command snippet below; it stores and validates the ref before invoking `roborev review`.
 
 If validation fails, inform the user the ref is invalid. Do not proceed.
 
@@ -45,11 +56,22 @@ If validation fails, inform the user the ref is invalid. Do not proceed.
 
 Construct the review command:
 
+If no commit is specified:
+
 ```
-roborev review [commit] --wait [--type <type>] [--panel <name>|none]
+roborev review --from-skill --wait [--type <type>] [--panel <name>|none]
 ```
 
-- If no commit is specified, omit it (defaults to HEAD)
+If a commit is specified:
+
+```
+read -r commit <<'ROBOREV_REF'
+<commit>
+ROBOREV_REF
+git rev-parse --verify --end-of-options "$commit^{commit}" || exit 1
+roborev review --from-skill "$commit" --wait [--type <type>] [--panel <name>|none]
+```
+
 - If `--type` is specified, include it
 - If `--panel <name>` is specified, include it (fans out to the named config panel); `--panel none` forces a single-agent review
 
@@ -59,8 +81,20 @@ Launch a background task that runs the command. This lets the user continue work
 
 Use the `Task` tool with `run_in_background: true` and `subagent_type: "Bash"`:
 
+If no commit is specified:
+
 ```
-roborev review [commit] --wait [--type <type>] [--panel <name>|none]
+roborev review --from-skill --wait [--type <type>] [--panel <name>|none]
+```
+
+If a commit is specified:
+
+```
+read -r commit <<'ROBOREV_REF'
+<commit>
+ROBOREV_REF
+git rev-parse --verify --end-of-options "$commit^{commit}" || exit 1
+roborev review --from-skill "$commit" --wait [--type <type>] [--panel <name>|none]
 ```
 
 Tell the user that the review has been submitted and they can continue working. You will present the results when the review completes.
@@ -105,7 +139,7 @@ If the review passed, confirm the result and do not offer `/roborev-fix`.
 User: `/roborev-review`
 
 Agent:
-1. Launches background task: `roborev review --wait`
+1. Launches background task: `roborev review --from-skill --wait`
 2. Tells user: "Review submitted for HEAD. I'll present the results when it completes."
 3. When complete, presents the verdict and findings grouped by severity
 4. If findings exist: "Would you like me to fix these findings? Run `/roborev-fix 1042`"
@@ -117,7 +151,7 @@ User: `/roborev-review abc123 --type security`
 
 Agent:
 1. Validates `abc123` resolves to a valid commit
-2. Launches background task: `roborev review abc123 --wait --type security`
+2. Launches background task: `roborev review --from-skill abc123 --wait --type security`
 3. Tells user: "Security review submitted for abc123. I'll present the results when it completes."
 4. When complete, presents the verdict and findings
 5. If findings exist: "Would you like me to fix these findings? Run `/roborev-fix 1043`"
